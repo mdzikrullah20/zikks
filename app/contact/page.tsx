@@ -233,7 +233,7 @@ Email
 
 
 <p>
-hello@zikks.com
+work.zikrullah@gmail.com
 </p>
 
 

@@ -148,50 +148,50 @@ export default function HomePage() {
 
 
 
-            <div className="mt-8 flex gap-4">
+           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+
+  <Link
+    href="/contact"
+    className="
+      flex
+      w-full
+      items-center
+      justify-center
+      gap-2
+      rounded-xl
+      bg-white
+      px-8
+      py-3
+      font-semibold
+      text-blue-900
+      sm:w-auto
+    "
+  >
+    Get Started
+
+    <ArrowRight size={18}/>
+  </Link>
 
 
-              <Link
-                href="/contact"
-                className="
-                flex
-                items-center
-                gap-2
-                rounded-xl
-                bg-white
-                px-8
-                py-3
-                font-semibold
-                text-blue-900
-                "
-              >
 
-                Get Started
+  <Link
+    href="/contact"
+    className="
+      w-full
+      rounded-xl
+      border
+      border-white
+      px-8
+      py-3
+      text-center
+      font-semibold
+      sm:w-auto
+    "
+  >
+    Our Services
+  </Link>
 
-                <ArrowRight size={18}/>
-
-              </Link>
-
-
-
-              <Link
-                href="/contact"
-                className="
-                rounded-xl
-                border
-                border-white
-                px-8
-                py-3
-                font-semibold
-                "
-              >
-
-                Our Services
-
-              </Link>
-
-
-            </div>
+</div>
 
 
           </div>

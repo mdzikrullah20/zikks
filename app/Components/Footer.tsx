@@ -311,7 +311,7 @@ export default function Footer() {
                   size={20}
                 />
 
-                info@zikks.com
+                work.zikrullah@gmail.com
 
               </p>
 
@@ -366,6 +366,7 @@ export default function Footer() {
               gap-2
               rounded-xl
               py-3
+              px-3
               font-semibold
               bg-[#0a2840]
               cursor-pointer

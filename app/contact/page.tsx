@@ -5,333 +5,726 @@ import {
   Mail,
   Phone,
   MessageSquare,
-  Send
+  Send,
+  MapPin
 } from "lucide-react";
 
+import { useState } from "react";
 
-export default function ContactForm() {
+
+export default function ContactPage() {
+
+
+  const [loading,setLoading] = useState(false);
+
+
+
+  const handleSubmit = (
+    e:React.FormEvent<HTMLFormElement>
+  )=>{
+
+    e.preventDefault();
+
+
+    setLoading(true);
+
+
+
+    const formData = new FormData(e.currentTarget);
+
+
+
+    const name = formData.get("name");
+    const email = formData.get("email");
+    const phone = formData.get("phone");
+    const message = formData.get("message");
+
+
+
+    const whatsappText = `
+
+🚀 New Website Inquiry
+
+👤 Name:
+${name}
+
+📧 Email:
+${email}
+
+📱 Phone:
+${phone}
+
+💬 Message:
+${message}
+
+`;
+
+
+
+    const whatsappNumber = "918084872966";
+
+
+
+    const whatsappURL =
+    `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+      whatsappText
+    )}`;
+
+
+
+    window.open(
+      whatsappURL,
+      "_blank"
+    );
+
+
+    setLoading(false);
+
+  };
+
+
+
+
 
   return (
-    <section className="min-h-screen bg-gray-50 py-20">
 
-      <div className="mx-auto max-w-7xl px-6">
 
+<main className="min-h-screen bg-gray-50 py-20">
 
-        {/* Heading */}
-        <div className="mx-auto mb-12 max-w-2xl text-center">
 
-          <h1 className="text-4xl font-bold text-black md:text-5xl">
-            Let's work together
-          </h1>
+<div className="mx-auto max-w-7xl px-6">
 
-          <p className="mt-4 text-gray-600">
-            Have a project in mind? Fill out the form and our team
-            will get back to you soon.
-          </p>
 
-        </div>
 
 
 
-        <div className="grid overflow-hidden rounded-3xl bg-white shadow-xl md:grid-cols-2">
+{/* Heading */}
 
 
-          {/* Left Content */}
+<div className="
+mx-auto
+mb-12
+max-w-3xl
+text-center
+">
 
-          <div className="bg-blue-900 p-10 text-white">
 
-            <h2 className="text-3xl font-bold">
-              Get in touch
-            </h2>
+<h1 className="
+text-4xl
+font-bold
+text-black
+md:text-6xl
+">
 
+Let's work together
 
-            <p className="mt-4 text-blue-100">
-              Tell us about your project, ideas, or questions.
-              We would love to hear from you.
-            </p>
+</h1>
 
 
 
-            <div className="mt-10 space-y-6">
+<p className="
+mt-5
+text-gray-600
+">
 
+Have a project idea?
+Send us your requirements on WhatsApp.
 
-              <div className="flex items-center gap-4">
+</p>
 
-                <div className="rounded-full bg-white/20 p-3">
-                  <Mail size={22}/>
-                </div>
 
-                <div>
-                  <p className="text-sm text-blue-200">
-                    Email
-                  </p>
+</div>
 
-                  <p>
-                    hello@zikks.com
-                  </p>
-                </div>
 
-              </div>
 
 
 
 
-              <div className="flex items-center gap-4">
 
-                <div className="rounded-full bg-white/20 p-3">
-                  <Phone size={22}/>
-                </div>
 
-                <div>
-                  <p className="text-sm text-blue-200">
-                    Phone
-                  </p>
+<div className="
+grid
+overflow-hidden
+rounded-3xl
+bg-white
+shadow-xl
+md:grid-cols-2
+">
 
-                  <p>
-                    +91 98765 43210
-                  </p>
-                </div>
 
-              </div>
 
 
 
-              <div className="flex items-center gap-4">
 
-                <div className="rounded-full bg-white/20 p-3">
-                  <MessageSquare size={22}/>
-                </div>
 
-                <div>
-                  <p className="text-sm text-blue-200">
-                    Support
-                  </p>
+{/* LEFT SIDE */}
 
-                  <p>
-                    Available 24/7
-                  </p>
-                </div>
 
-              </div>
 
+<div className="
+bg-blue-900
+p-10
+text-white
+">
 
-            </div>
 
+<h2 className="
+text-3xl
+font-bold
+">
 
-          </div>
+Get In Touch
 
+</h2>
 
 
 
+<p className="
+mt-4
+text-blue-100
+">
 
-          {/* Form */}
+Let's discuss your next digital project.
 
-          <div className="p-10">
+</p>
 
 
-            <form className="space-y-5">
 
 
-              {/* Name */}
 
-              <div>
 
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  Full Name
-                </label>
+<div className="
+mt-10
+space-y-6
+">
 
 
-                <div className="relative">
 
-                  <User
-                    className="absolute left-3 top-3 text-gray-400"
-                    size={20}
-                  />
 
-                  <input
-                    type="text"
-                    placeholder="John Doe"
-                    className="
-                    w-full
-                    rounded-xl
-                    border
-                    border-gray-200
-                    py-3
-                    pl-11
-                    pr-4
-                    outline-none
-                    transition
-                    focus:border-blue-600
-                    focus:ring-2
-                    focus:ring-blue-100
-                    "
-                  />
 
-                </div>
+<div className="
+flex
+items-center
+gap-4
+">
 
-              </div>
 
+<div className="
+rounded-full
+bg-white/20
+p-3
+">
 
+<Mail/>
 
+</div>
 
-              {/* Email */}
 
-              <div>
+<div>
 
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  Email Address
-                </label>
+<p className="
+text-sm
+text-blue-200
+">
 
+Email
 
-                <div className="relative">
+</p>
 
-                  <Mail
-                    className="absolute left-3 top-3 text-gray-400"
-                    size={20}
-                  />
 
+<p>
+hello@zikks.com
+</p>
 
-                  <input
-                    type="email"
-                    placeholder="john@example.com"
-                    className="
-                    w-full
-                    rounded-xl
-                    border
-                    border-gray-200
-                    py-3
-                    pl-11
-                    pr-4
-                    outline-none
-                    focus:border-blue-600
-                    focus:ring-2
-                    focus:ring-blue-100
-                    "
-                  />
 
-                </div>
+</div>
 
-              </div>
 
+</div>
 
 
 
 
-              {/* Phone */}
 
-              <div>
 
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  Phone Number
-                </label>
 
+<div className="
+flex
+items-center
+gap-4
+">
 
-                <div className="relative">
 
-                  <Phone
-                    className="absolute left-3 top-3 text-gray-400"
-                    size={20}
-                  />
+<div className="
+rounded-full
+bg-white/20
+p-3
+">
 
+<Phone/>
 
-                  <input
-                    type="text"
-                    placeholder="+91 98765 43210"
-                    className="
-                    w-full
-                    rounded-xl
-                    border
-                    border-gray-200
-                    py-3
-                    pl-11
-                    pr-4
-                    outline-none
-                    focus:border-blue-600
-                    focus:ring-2
-                    focus:ring-blue-100
-                    "
-                  />
+</div>
 
-                </div>
 
-              </div>
+<div>
 
+<p className="
+text-sm
+text-blue-200
+">
 
+Phone
 
+</p>
 
 
-              {/* Message */}
+<p>
++91 8084872966
+</p>
 
-              <div>
 
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  Message
-                </label>
+</div>
 
 
-                <textarea
-                  rows={4}
-                  placeholder="Tell us about your project..."
-                  className="
-                  w-full
-                  resize-none
-                  rounded-xl
-                  border
-                  border-gray-200
-                  p-4
-                  outline-none
-                  focus:border-blue-600
-                  focus:ring-2
-                  focus:ring-blue-100
-                  "
-                />
+</div>
 
 
-              </div>
 
 
 
 
 
-              {/* Button */}
+<div className="
+flex
+items-center
+gap-4
+">
 
-              <button
-                type="submit"
-                className="
-                flex
-                w-full
-                items-center
-                justify-center
-                gap-2
-                rounded-xl
-                bg-blue-900
-                py-3
-                font-semibold
-                text-white
-                transition
-                hover:bg-blue-800
-                "
-              >
 
-                Send Message
+<div className="
+rounded-full
+bg-white/20
+p-3
+">
 
-                <Send size={18}/>
+<MapPin/>
 
-              </button>
+</div>
 
 
-            </form>
+<div>
 
+<p className="
+text-sm
+text-blue-200
+">
 
-          </div>
+Location
 
+</p>
 
-        </div>
 
+<p>
+Hyderabad, India
+</p>
 
-      </div>
 
+</div>
 
-    </section>
+
+</div>
+
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* FORM */}
+
+
+
+<div className="p-10">
+
+
+
+<form
+onSubmit={handleSubmit}
+className="space-y-5"
+>
+
+
+
+
+
+
+{/* NAME */}
+
+<div>
+
+<label className="
+mb-2
+block
+text-sm
+font-medium
+text-gray-700
+">
+
+Full Name
+
+</label>
+
+
+
+<div className="relative">
+
+
+<User
+className="
+absolute
+left-3
+top-3
+text-gray-400
+"
+size={20}
+/>
+
+
+<input
+
+required
+
+name="name"
+
+type="text"
+
+placeholder="John Doe"
+
+className="
+w-full
+rounded-xl
+border
+py-3
+pl-11
+pr-4
+text-black
+outline-none
+focus:border-blue-600
+focus:ring-2
+focus:ring-blue-100
+"
+
+/>
+
+
+</div>
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* EMAIL */}
+
+
+<div>
+
+
+<label className="
+mb-2
+block
+text-sm
+font-medium
+text-gray-700
+">
+
+Email
+
+</label>
+
+
+
+<div className="relative">
+
+
+<Mail
+
+className="
+absolute
+left-3
+top-3
+text-gray-400
+"
+
+size={20}
+
+/>
+
+
+
+<input
+
+required
+
+name="email"
+
+type="email"
+
+placeholder="example@gmail.com"
+
+className="
+w-full
+rounded-xl
+border
+py-3
+pl-11
+pr-4
+text-black
+outline-none
+focus:border-blue-600
+focus:ring-2
+focus:ring-blue-100
+"
+
+/>
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* PHONE */}
+
+
+
+<div>
+
+
+<label className="
+mb-2
+block
+text-sm
+font-medium
+text-gray-700
+">
+
+Phone Number
+
+</label>
+
+
+
+<div className="relative">
+
+
+<Phone
+
+className="
+absolute
+left-3
+top-3
+text-gray-400
+"
+
+size={20}
+
+/>
+
+
+<input
+
+required
+
+name="phone"
+
+type="tel"
+
+placeholder="+91 98765 43210"
+
+className="
+w-full
+rounded-xl
+border
+py-3
+pl-11
+pr-4
+text-black
+outline-none
+focus:border-blue-600
+focus:ring-2
+focus:ring-blue-100
+"
+
+/>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* MESSAGE */}
+
+
+
+<div>
+
+
+<label className="
+mb-2
+block
+text-sm
+font-medium
+text-gray-700
+">
+
+Project Details
+
+</label>
+
+
+
+<textarea
+
+required
+
+name="message"
+
+rows={5}
+
+placeholder="Tell us about your project..."
+
+className="
+w-full
+rounded-xl
+border
+p-4
+text-black
+outline-none
+focus:border-blue-600
+focus:ring-2
+focus:ring-blue-100
+"
+
+/>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* BUTTON */}
+
+
+
+<button
+
+disabled={loading}
+
+type="submit"
+
+className="
+flex
+w-full
+items-center
+justify-center
+gap-2
+rounded-xl
+bg-blue-900
+py-3
+font-semibold
+text-white
+transition
+hover:bg-blue-1000
+disabled:opacity-50
+cursor-pointer
+"
+
+>
+
+
+{
+loading
+?
+"Opening WhatsApp..."
+:
+"Send WhatsApp Message"
+}
+
+
+<Send size={18}/>
+
+
+</button>
+
+
+
+
+
+
+</form>
+
+
+
+</div>
+
+
+
+
+
+
+</div>
+
+
+
+
+</div>
+
+
+</main>
+
+
   );
+
 }

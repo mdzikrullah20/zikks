@@ -1,5 +1,19 @@
 import "./globals.css";
-import Navbar from "./components/Navbar";
+import { Roboto } from "next/font/google";
+import Navbar from "./Components/Navbar";
+import Footer from "./Components/Footer"
+
+const roboto = Roboto({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "700"],
+  variable: "--font-roboto",
+});
+
+export const metadata = {
+  title: "Zikks",
+  description: "Zikks Website",
+};
+
 
 export default function RootLayout({
   children,
@@ -11,7 +25,7 @@ export default function RootLayout({
       <body>
         <Navbar />
         {children}
-        {/* <Footer/> */}
+        <Footer/>
       </body>
     </html>
   );

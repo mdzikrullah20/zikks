@@ -75,10 +75,10 @@ export default function SalesforceServicesPage() {
       <section
         className="
         overflow-hidden
-        bg-gradient-to-br
-        from-slate-950
-        via-blue-950
-        to-blue-900
+        bg-[#0a2840]
+        from-[#0a2840]
+        via-[#0a2840]
+        to-[#0a2840]
         py-28
         text-white
         "
@@ -557,7 +557,7 @@ export default function SalesforceServicesPage() {
       {/* CTA */}
 
       <section className="
-        bg-blue-900
+        bg-[#0a2840]
         py-20
         text-white
       ">

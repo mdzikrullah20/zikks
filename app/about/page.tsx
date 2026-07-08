@@ -42,7 +42,7 @@ export default function AboutPage() {
 
       {/* Hero Section */}
 
-      <section className="bg-gray-100 py-24">
+      <section className="bg-[#0a2840] py-24">
 
         <div className="mx-auto max-w-7xl px-6">
 
@@ -53,11 +53,11 @@ export default function AboutPage() {
             <h1 className="
               text-5xl
               font-bold
-              text-black
+              text-white
               md:text-6xl
             ">
               We build digital
-              <span className="text-blue-700">
+              <span className="text-white">
                 {" "}experiences
               </span>
             </h1>
@@ -67,7 +67,7 @@ export default function AboutPage() {
               mt-6
               text-lg
               leading-relaxed
-              text-gray-600
+              text-gray-300
             ">
               Zikks is a digital technology company helping businesses
               transform their ideas into powerful digital products.
@@ -82,12 +82,13 @@ export default function AboutPage() {
               mt-8
               inline-block
               rounded-xl
-              bg-blue-900
+              bg-[#0a2840]
               px-7
               py-3
               font-semibold
               text-white
-              hover:bg-blue-800
+              hover:bg-[#0a2843]
+              animate-bounced
               "
             >
               Work With Us
@@ -130,7 +131,7 @@ export default function AboutPage() {
             items-center
             justify-center
             rounded-3xl
-            bg-blue-900
+            bg-[#0a2840]
           ">
 
             <Rocket
@@ -353,7 +354,7 @@ export default function AboutPage() {
 
       {/* CTA */}
 
-      <section className="bg-blue-900 py-16">
+      <section className="bg-[#0a2840] py-16">
 
 
         <div className="

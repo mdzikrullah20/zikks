@@ -365,11 +365,10 @@ export default function Footer() {
               items-center
               gap-2
               rounded-xl
-              bg-blue-700
-              px-5
               py-3
               font-semibold
-              hover:bg-blue-600
+              bg-[#0a2840]
+              cursor-pointer
               "
             >
 

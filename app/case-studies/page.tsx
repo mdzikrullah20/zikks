@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 
+
 export default function CaseStudiesPage() {
 
 
@@ -83,10 +84,7 @@ export default function CaseStudiesPage() {
 
       <section
         className="
-        bg-gradient-to-br
-        from-blue-950
-        via-blue-900
-        to-indigo-900
+        bg-[#0a2840]
         py-28
         text-white
         "
@@ -116,7 +114,7 @@ export default function CaseStudiesPage() {
 
             Real Solutions.
 
-            <span className="text-blue-400">
+            <span className="text-orange-400">
               {" "}Real Results.
             </span>
 
@@ -435,7 +433,7 @@ export default function CaseStudiesPage() {
 
       <section
         className="
-        bg-blue-900
+        bg-[#0a2840]
         py-20
         text-white
         "

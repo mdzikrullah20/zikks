@@ -50,9 +50,9 @@ export default function TermsConditionsPage() {
 
       <section
         className="
-        bg-gradient-to-br
-        from-blue-950
-        via-blue-900
+        bg-[#0a2840]
+        from-[#0a2840]
+        via-[#0a2840]
         to-indigo-900
         py-24
         text-white
@@ -347,7 +347,7 @@ export default function TermsConditionsPage() {
             className="
             mt-10
             rounded-2xl
-            bg-blue-900
+            bg-[#0a2840]
             p-8
             text-white
             "

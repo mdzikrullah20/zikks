@@ -162,7 +162,7 @@ md:grid-cols-2
 
 
 <div className="
-bg-blue-900
+bg-[#0a2840]
 p-10
 text-white
 ">
@@ -671,7 +671,7 @@ items-center
 justify-center
 gap-2
 rounded-xl
-bg-blue-900
+bg-[#0a2840]
 py-3
 font-semibold
 text-white

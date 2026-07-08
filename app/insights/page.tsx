@@ -69,10 +69,7 @@ export default function InsightsPage() {
 
       <section
         className="
-        bg-gradient-to-br
-        from-blue-950
-        via-blue-900
-        to-indigo-900
+        bg-[#0a2840]
         py-28
         text-white
         "
@@ -400,7 +397,7 @@ export default function InsightsPage() {
 
       <section
         className="
-        bg-blue-900
+        bg-[#0a2840]
         py-20
         text-white
         "

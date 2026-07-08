@@ -67,8 +67,8 @@ export default function DigitalMarketingPage() {
         relative
         overflow-hidden
         bg-gradient-to-br
-        from-blue-950
-        via-blue-900
+        from-[#0a2840]
+        via-[#0a2840]
         to-indigo-900
         py-28
         text-white
@@ -198,10 +198,10 @@ export default function DigitalMarketingPage() {
 
           {
             [
-              ["250+", "Projects"],
+              ["56+", "Projects"],
               ["95%", "Success Rate"],
-              ["50+", "Clients"],
-              ["5+", "Years Experience"]
+              ["40+", "Clients"],
+              ["1+", "Years Experience"]
             ].map((item,index)=>(
 
               <div
@@ -466,7 +466,7 @@ export default function DigitalMarketingPage() {
       {/* CTA */}
 
       <section className="
-        bg-blue-900
+        bg-[#0a2840]
         py-20
         text-white
       ">

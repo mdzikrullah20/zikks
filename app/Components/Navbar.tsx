@@ -151,7 +151,7 @@ export default function Navbar() {
           <div className="group relative">
 
             <Link
-              href="/what-we-think"
+              href="#"
               className="flex items-center gap-1 text-black hover:text-indigo-600"
             >
               What we think
@@ -203,7 +203,7 @@ export default function Navbar() {
           {/* CONTACT */}
           <Link
             href="/contact"
-            className="text-white text-bold bg-blue-900 py-2 px-3 rounded-md hover:text-gray-100"
+            className="text-white text-bold bg-[#0a2840] py-2 px-3 rounded-md hover:text-gray-100"
           >
             Contact
           </Link>

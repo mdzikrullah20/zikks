@@ -66,7 +66,7 @@ export default function AISolutionsPage() {
       <section className="
         relative
         overflow-hidden
-        bg-gradient-to-br
+        bg-[#0a2840]
         from-black
         via-gray-900
         to-blue-950
@@ -138,7 +138,7 @@ export default function AISolutionsPage() {
                 href="/contact"
                 className="
                 rounded-xl
-                bg-blue-600
+                bg-blue-900
                 px-7
                 py-3
                 font-semibold
@@ -483,7 +483,7 @@ export default function AISolutionsPage() {
       {/* CTA */}
 
       <section className="
-        bg-blue-900
+        bg-[#0a2840]
         py-20
         text-white
       ">

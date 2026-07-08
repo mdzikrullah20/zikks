@@ -51,11 +51,11 @@ export default function HomePage() {
 
   const stats = [
     {
-      number:"100+",
+      number:"56+",
       text:"Projects Delivered"
     },
     {
-      number:"50+",
+      number:"30+",
       text:"Happy Clients"
     },
     {
@@ -80,8 +80,8 @@ export default function HomePage() {
       <section
         className="
         bg-gradient-to-br
-        from-blue-950
-        via-blue-900
+        from-[#0a2840]
+        via-[#0a2840]
         to-indigo-900
         py-28
         text-white
@@ -175,7 +175,7 @@ export default function HomePage() {
 
 
               <Link
-                href="/what-we-do"
+                href="/contact"
                 className="
                 rounded-xl
                 border
@@ -348,13 +348,13 @@ export default function HomePage() {
                     className="
                     inline-flex
                     rounded-xl
-                    bg-blue-700
+                    bg-[#0a2840]
                     p-4
                     "
                   >
 
                     <Icon
-                      className="text-blue-900"
+                      className="text-white"
                       size={30}
                     />
 
@@ -532,10 +532,9 @@ export default function HomePage() {
 
       {/* CTA */}
 
-
       <section
         className="
-        bg-blue-900
+        bg-[#0a2840]
         py-20
         text-white
         "

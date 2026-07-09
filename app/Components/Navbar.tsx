@@ -11,13 +11,12 @@ interface NavItem {
 
 interface DesktopMenuProps {
   title: string;
-  mainHref: string; // Added main route for the top-level link
+  mainHref: string;
   items: NavItem[];
 }
 
 interface MobileMenuItemProps {
   title: string;
-  mainHref: string; // Added main route for the top-level link
   id: string;
   items: NavItem[];
   openSubMenu: string | null;
@@ -36,7 +35,7 @@ export default function Navbar() {
 
   const menuData = {
     whatWeDo: {
-      mainHref: "/services", // Change to your actual main category page route
+      mainHref: "#", 
       items: [
         { label: "Digital Marketing", href: "/digitalmarketing" },
         { label: "AI Solutions", href: "/ai" },
@@ -45,7 +44,7 @@ export default function Navbar() {
       ]
     },
     whoWeAre: {
-      mainHref: "/about", // Change to your actual main category page route
+      mainHref: "#", 
       items: [
         { label: "About Us", href: "/about" },
         { label: "Our Team", href: "/team" },
@@ -53,7 +52,7 @@ export default function Navbar() {
       ]
     },
     whatWeThink: {
-      mainHref: "/insights-hub", // Change to your actual main category page route
+      mainHref: "#", 
       items: [
         { label: "Blog", href: "/blog" },
         { label: "Insights", href: "/insights" },
@@ -121,7 +120,6 @@ export default function Navbar() {
             <div className="flex flex-col gap-5 px-5 py-6">
               <MobileMenuItem
                 title="What we do"
-                mainHref={menuData.whatWeDo.mainHref}
                 id="what"
                 openSubMenu={openSubMenu}
                 setOpenSubMenu={setOpenSubMenu}
@@ -131,7 +129,6 @@ export default function Navbar() {
 
               <MobileMenuItem
                 title="Who we are"
-                mainHref={menuData.whoWeAre.mainHref}
                 id="who"
                 openSubMenu={openSubMenu}
                 setOpenSubMenu={setOpenSubMenu}
@@ -141,7 +138,6 @@ export default function Navbar() {
 
               <MobileMenuItem
                 title="What we think"
-                mainHref={menuData.whatWeThink.mainHref}
                 id="think"
                 openSubMenu={openSubMenu}
                 setOpenSubMenu={setOpenSubMenu}
@@ -149,7 +145,7 @@ export default function Navbar() {
                 items={menuData.whatWeThink.items}
               />
 
-              {/* Contact Link structured smoothly in mobile view */}
+              {/* Contact Link */}
               <div className="border-t pt-4 mt-2">
                 <Link
                   href="/contact"
@@ -194,7 +190,6 @@ function DesktopMenu({ title, mainHref, items }: DesktopMenuProps) {
 
 function MobileMenuItem({
   title,
-  mainHref,
   id,
   items,
   openSubMenu,
@@ -205,39 +200,31 @@ function MobileMenuItem({
 
   return (
     <div className="border-b border-gray-100 pb-3 last:border-0">
-      <div className="flex w-full items-center justify-between py-1">
-        {/* Clicking the text navigates to the landing page */}
-        <Link 
-          href={mainHref} 
-          onClick={closeMobileMenu}
-          className="text-base font-medium text-black hover:text-indigo-600 flex-grow"
-        >
+      {/* Changed container to a single clickable button wrapper */}
+      <button
+        onClick={() => setOpenSubMenu(isExpanded ? null : id)}
+        className="flex w-full items-center justify-between py-2 text-left"
+      >
+        <span className="text-base font-medium text-black transition-colors duration-200">
           {title}
-        </Link>
+        </span>
         
-        {/* Clicking the chevron expands/collapses the sub nav items */}
-        <button
-          onClick={() => setOpenSubMenu(isExpanded ? null : id)}
-          className="p-2 -mr-2 text-gray-500 hover:text-black"
-          aria-label={`Toggle ${title} sub-menu`}
-        >
-          <ChevronDown
-            size={18}
-            className={`transform transition-transform duration-200 ${
-              isExpanded ? "rotate-180" : ""
-            }`}
-          />
-        </button>
-      </div>
+        <ChevronDown
+          size={18}
+          className={`text-gray-500 transform transition-transform duration-200 ${
+            isExpanded ? "rotate-180 text-black" : ""
+          }`}
+        />
+      </button>
 
       {isExpanded && (
-        <div className="ml-3 mt-2 flex flex-col gap-3 border-l-2 border-gray-100 pl-3">
+        <div className="ml-3 mt-1 flex flex-col gap-3 border-l-2 border-gray-100 pl-3">
           {items.map((item, index) => (
             <Link
               key={index}
               href={item.href}
               onClick={closeMobileMenu}
-              className="text-sm py-1 text-gray-600 hover:text-black"
+              className="text-sm py-1 text-gray-600 hover:text-black active:text-indigo-600"
             >
               {item.label}
             </Link>

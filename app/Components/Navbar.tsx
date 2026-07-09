@@ -4,310 +4,189 @@ import Link from "next/link";
 import { useState } from "react";
 import { Menu, X, ChevronDown } from "lucide-react";
 
-export default function Navbar() {
+interface NavItem {
+  label: string;
+  href: string;
+}
 
+interface DesktopMenuProps {
+  title: string;
+  mainHref: string;
+  items: NavItem[];
+}
+
+interface MobileMenuItemProps {
+  title: string;
+  id: string;
+  items: NavItem[];
+  openSubMenu: string | null;
+  setOpenSubMenu: (id: string | null) => void;
+  closeMobileMenu: () => void;
+}
+
+export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null);
-
 
   const closeMobileMenu = () => {
     setIsOpen(false);
     setOpenSubMenu(null);
   };
 
+  const menuData = {
+    whatWeDo: {
+      mainHref: "#", 
+      items: [
+        { label: "Digital Marketing", href: "/digitalmarketing" },
+        { label: "AI Solutions", href: "/ai" },
+        { label: "Custom App Development", href: "/customapp" },
+        { label: "Salesforce Services", href: "/salesforce" },
+      ]
+    },
+    whoWeAre: {
+      mainHref: "#", 
+      items: [
+        { label: "About Us", href: "/about" },
+        { label: "Our Team", href: "/team" },
+        { label: "FAQs", href: "/faqs" },
+      ]
+    },
+    whatWeThink: {
+      mainHref: "#", 
+      items: [
+        { label: "Blog", href: "/blog" },
+        { label: "Insights", href: "/insights" },
+        { label: "Case Studies", href: "/case-studies" },
+      ]
+    }
+  };
 
   return (
-
     <nav className="sticky top-0 z-50 w-full border-b bg-white">
-
-
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-
-
+      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6">
         {/* Logo */}
-
         <Link href="/">
-          <h1 className="text-2xl font-bold text-black">
-            Zikks
-          </h1>
+          <h1 className="text-xl font-bold text-black sm:text-2xl">Zikks</h1>
         </Link>
 
-
-
-
-
-        {/* Desktop */}
-
+        {/* Desktop Menu */}
         <div className="hidden items-center gap-8 md:flex">
-
-
-          <DesktopMenu
-            title="What we do"
-            items={[
-              ["Digital Marketing","/digitalmarketing"],
-              ["AI Solutions","/ai"],
-              ["Custom App Development","/customapp"],
-              ["Salesforce Services","/salesforce"],
-            ]}
-          />
-
-
-          <DesktopMenu
-            title="Who we are"
-            items={[
-              ["About Us","/about"],
-              ["Our Team","/team"],
-              ["FAQs","/faqs"],
-            ]}
-          />
-
-
-
-          <DesktopMenu
-            title="What we think"
-            items={[
-              ["Blog","/blog"],
-              ["Insights","/insights"],
-              ["Case Studies","/case-studies"],
-            ]}
-          />
-
-
+          <DesktopMenu title="What we do" mainHref={menuData.whatWeDo.mainHref} items={menuData.whatWeDo.items} />
+          <DesktopMenu title="Who we are" mainHref={menuData.whoWeAre.mainHref} items={menuData.whoWeAre.items} />
+          <DesktopMenu title="What we think" mainHref={menuData.whatWeThink.mainHref} items={menuData.whatWeThink.items} />
 
           <Link
             href="/contact"
-            className="rounded-md bg-[#0a2840] px-4 py-2 text-white"
+            className="rounded-md bg-[#0a2840] px-4 py-2 text-white transition hover:bg-[#0f3554]"
           >
             Contact
           </Link>
-
-
         </div>
 
-
-
-
-
-        {/* Mobile Icon */}
-
+        {/* Mobile Menu Icon */}
         <button
           onClick={() => setIsOpen(true)}
-          className="md:hidden text-black"
+          className="flex h-10 w-10 items-center justify-center rounded-md text-black md:hidden"
+          aria-label="Open menu"
         >
-          <Menu size={28}/>
+          <Menu size={30} strokeWidth={2} />
         </button>
-
-
       </div>
 
-
-
-
-
-
-
       {/* Mobile Drawer */}
+      {isOpen && (
+        <>
+          {/* Overlay */}
+          <div
+            className="fixed inset-0 z-40 bg-black/40 md:hidden"
+            onClick={closeMobileMenu}
+          />
 
-      {
-        isOpen && (
+          {/* Sidebar */}
+          <div className="fixed right-0 top-0 z-50 h-full w-[85%] max-w-sm overflow-y-auto bg-white shadow-xl md:hidden">
+            {/* Drawer Header */}
+            <div className="flex h-16 items-center justify-between border-b px-5">
+              <h2 className="text-xl font-bold text-black">Zikks</h2>
+              <button
+                onClick={closeMobileMenu}
+                className="flex h-10 w-10 items-center justify-center rounded-md text-black"
+                aria-label="Close menu"
+              >
+                <X size={28} />
+              </button>
+            </div>
 
-          <>
+            {/* Mobile Links */}
+            <div className="flex flex-col gap-5 px-5 py-6">
+              <MobileMenuItem
+                title="What we do"
+                id="what"
+                openSubMenu={openSubMenu}
+                setOpenSubMenu={setOpenSubMenu}
+                closeMobileMenu={closeMobileMenu}
+                items={menuData.whatWeDo.items}
+              />
 
+              <MobileMenuItem
+                title="Who we are"
+                id="who"
+                openSubMenu={openSubMenu}
+                setOpenSubMenu={setOpenSubMenu}
+                closeMobileMenu={closeMobileMenu}
+                items={menuData.whoWeAre.items}
+              />
 
-            {/* Overlay */}
+              <MobileMenuItem
+                title="What we think"
+                id="think"
+                openSubMenu={openSubMenu}
+                setOpenSubMenu={setOpenSubMenu}
+                closeMobileMenu={closeMobileMenu}
+                items={menuData.whatWeThink.items}
+              />
 
-            <div
-              className="fixed inset-0 bg-black/40 md:hidden"
-              onClick={closeMobileMenu}
-            />
-
-
-
-
-
-            {/* Sidebar */}
-
-            <div
-              className="
-              fixed right-0 top-0 z-50 
-              h-full w-1/2 
-              bg-white shadow-xl 
-              md:hidden
-              "
-            >
-
-
-              <div className="flex h-16 items-center justify-between border-b px-5">
-
-
-                <h2 className="text-xl font-bold">
-                  Zikks
-                </h2>
-
-
-                <button onClick={closeMobileMenu}>
-                  <X size={28}/>
-                </button>
-
-
-              </div>
-
-
-
-
-
-              <div className="flex flex-col gap-5 px-5 py-6">
-
-
-
-
-
-                <MobileMenuItem
-                  title="What we do"
-                  id="what"
-                  openSubMenu={openSubMenu}
-                  setOpenSubMenu={setOpenSubMenu}
-                  closeMobileMenu={closeMobileMenu}
-                  items={[
-                    ["Digital Marketing","/digitalmarketing"],
-                    ["AI Solutions","/ai"],
-                    ["Custom App Development","/customapp"],
-                    ["Salesforce Services","/salesforce"],
-                  ]}
-                />
-
-
-
-
-
-                <MobileMenuItem
-                  title="Who we are"
-                  id="who"
-                  openSubMenu={openSubMenu}
-                  setOpenSubMenu={setOpenSubMenu}
-                  closeMobileMenu={closeMobileMenu}
-                  items={[
-                    ["About Us","/about"],
-                    ["Our Team","/team"],
-                    ["FAQs","/faqs"],
-                  ]}
-                />
-
-
-
-
-
-
-                <MobileMenuItem
-                  title="What we think"
-                  id="think"
-                  openSubMenu={openSubMenu}
-                  setOpenSubMenu={setOpenSubMenu}
-                  closeMobileMenu={closeMobileMenu}
-                  items={[
-                    ["Blog","/blog"],
-                    ["Insights","/insights"],
-                    ["Case Studies","/case-studies"],
-                  ]}
-                />
-
-
-
-
-
+              {/* Contact Link */}
+              <div className="border-t pt-4 mt-2">
                 <Link
                   href="/contact"
                   onClick={closeMobileMenu}
-                  className="rounded-md bg-[#0a2840] px-3 py-2 text-center text-white"
+                  className="block rounded-md bg-[#0a2840] px-3 py-2.5 text-center font-medium text-white transition hover:bg-[#0f3554]"
                 >
                   Contact
                 </Link>
-
-
               </div>
-
-
             </div>
-
-
-          </>
-
-        )
-      }
-
-
+          </div>
+        </>
+      )}
     </nav>
-
   );
-
 }
 
-
-
-
-
-
-
-
-function DesktopMenu({
-  title,
-  items
-}:any){
-
+function DesktopMenu({ title, mainHref, items }: DesktopMenuProps) {
   return (
-
     <div className="group relative">
-
-
-      <button
-        className="flex items-center gap-1 text-black hover:text-indigo-600"
-      >
+      <Link href={mainHref} className="flex items-center gap-1 text-black hover:text-indigo-600 py-2">
         {title}
-        <ChevronDown size={16}/>
-      </button>
+        <ChevronDown size={16} />
+      </Link>
 
-
-
-      <div className="absolute left-0 top-full hidden pt-4 group-hover:block">
-
-
-        <div className="w-60 rounded-md bg-white p-3 shadow-lg">
-
-
-          {
-            items.map((item:any,index:number)=>(
-
-              <Link
-                key={index}
-                href={item[1]}
-                className="block rounded-md px-4 py-2 text-black hover:bg-gray-100"
-              >
-                {item[0]}
-              </Link>
-
-            ))
-          }
-
-
+      <div className="absolute left-0 top-full hidden pt-2 group-hover:block">
+        <div className="w-60 rounded-md bg-white p-3 shadow-lg border">
+          {items.map((item, index) => (
+            <Link
+              key={index}
+              href={item.href}
+              className="block rounded-md px-4 py-2 text-black hover:bg-gray-100"
+            >
+              {item.label}
+            </Link>
+          ))}
         </div>
-
-
       </div>
-
-
     </div>
-
   );
-
 }
-
-
-
-
-
-
-
-
 
 function MobileMenuItem({
   title,
@@ -315,76 +194,43 @@ function MobileMenuItem({
   items,
   openSubMenu,
   setOpenSubMenu,
-  closeMobileMenu
-}:any){
-
+  closeMobileMenu,
+}: MobileMenuItemProps) {
+  const isExpanded = openSubMenu === id;
 
   return (
-
-    <div>
-
-
+    <div className="border-b border-gray-100 pb-3 last:border-0">
+      {/* Changed container to a single clickable button wrapper */}
       <button
-        onClick={() =>
-          setOpenSubMenu(
-            openSubMenu === id
-            ? null
-            : id
-          )
-        }
-
-        className="flex w-full justify-between text-black"
+        onClick={() => setOpenSubMenu(isExpanded ? null : id)}
+        className="flex w-full items-center justify-between py-2 text-left"
       >
-
-        {title}
-
-
+        <span className="text-base font-medium text-black transition-colors duration-200">
+          {title}
+        </span>
+        
         <ChevronDown
           size={18}
-          className={
-            openSubMenu === id
-            ? "rotate-180 transition"
-            : "transition"
-          }
+          className={`text-gray-500 transform transition-transform duration-200 ${
+            isExpanded ? "rotate-180 text-black" : ""
+          }`}
         />
-
-
       </button>
 
-
-
-
-
-      {
-        openSubMenu === id && (
-
-          <div className="ml-3 mt-3 flex flex-col gap-3">
-
-
-            {
-              items.map((item:any,index:number)=>(
-
-                <Link
-                  key={index}
-                  href={item[1]}
-                  onClick={closeMobileMenu}
-                  className="text-sm text-gray-700"
-                >
-                  {item[0]}
-                </Link>
-
-              ))
-            }
-
-
-          </div>
-
-        )
-      }
-
-
+      {isExpanded && (
+        <div className="ml-3 mt-1 flex flex-col gap-3 border-l-2 border-gray-100 pl-3">
+          {items.map((item, index) => (
+            <Link
+              key={index}
+              href={item.href}
+              onClick={closeMobileMenu}
+              className="text-sm py-1 text-gray-600 hover:text-black active:text-indigo-600"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
-
   );
-
 }

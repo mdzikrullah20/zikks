@@ -5,6 +5,8 @@ import { useEffect, useRef } from "react";
 import {
   Vector3 as a,
   MeshPhysicalMaterial as c,
+  Camera,
+  ColorRepresentation,
   InstancedMesh as d,
   Timer as e,
   AmbientLight as f,
@@ -13,8 +15,10 @@ import {
   Scene as i,
   Color as l,
   Object3D as m,
+  MeshPhysicalMaterialParameters,
   SRGBColorSpace as n,
   MathUtils as o,
+  Object3DEventMap,
   PMREMGenerator as p,
   Vector2 as r,
   WebGLRenderer as s,
@@ -28,15 +32,15 @@ import { RoomEnvironment as z } from "three/examples/jsm/environments/RoomEnviro
 
 class x {
   #e;
-  canvas;
-  camera;
-  cameraMinAspect;
-  cameraMaxAspect;
-  cameraFov;
-  maxPixelRatio;
-  minPixelRatio;
-  scene;
-  renderer;
+  canvas!: HTMLCanvasElement;
+  camera!: Camera;
+  cameraMinAspect!: number;
+  cameraMaxAspect!: number;
+  cameraFov!: number;
+  maxPixelRatio!: number;
+  minPixelRatio!: number;
+  scene!: i<Object3DEventMap>;
+  renderer!: s;
   #t;
   size = { width: 0, height: 0, wWidth: 0, wHeight: 0, ratio: 0, pixelRatio: 0 };
   render = this.#i;
@@ -52,7 +56,7 @@ class x {
   #c = new e();
   #h = { elapsed: 0, delta: 0 };
   #l;
-  constructor(e) {
+  constructor(e: { canvas: any; size: string; rendererOptions: { antialias: boolean; alpha: boolean; }; }) {
     this.#e = { ...e };
     this.#m();
     this.#d();
@@ -106,7 +110,7 @@ class x {
     this.#o?.disconnect();
     document.removeEventListener("visibilitychange", this.#v.bind(this));
   }
-  #u(e) {
+  #u(e: { isIntersecting: boolean; }[]) {
     this.#s = e[0].isIntersecting;
     this.#s ? this.#w() : this.#z();
   }
@@ -152,7 +156,7 @@ class x {
     this.camera.updateProjectionMatrix();
     this.updateWorldSize();
   }
-  #A(e) {
+  #A(e: number) {
     const t = Math.tan(o.degToRad(this.cameraFov / 2)) / (this.camera.aspect / e);
     this.camera.fov = 2 * o.radToDeg(Math.atan(t));
   }
@@ -210,7 +214,7 @@ class x {
     this.renderer.render(this.scene, this.camera);
   }
   clear() {
-    this.scene.traverse((e) => {
+    this.scene.traverse((e: { isMesh: any; material: { [x: string]: any; dispose?: any; } | null; geometry: { dispose: () => void; }; }) => {
       if (e.isMesh && typeof e.material === "object" && e.material !== null) {
         Object.keys(e.material).forEach((t) => {
           const i = e.material[t];
@@ -238,7 +242,7 @@ class x {
 const b = new Map(),
   A = new r();
 let R = false;
-function S(e) {
+function S(e: { domElement: any; onMove?: () => void; onLeave?: () => void; }) {
   const t = {
     position: new r(),
     nPosition: new r(),
@@ -286,7 +290,7 @@ function S(e) {
   return t;
 }
 
-function M(e) {
+function M(e: { clientX: number; clientY: number; }) {
   A.x = e.clientX;
   A.y = e.clientY;
   processInteraction();
@@ -309,7 +313,7 @@ function processInteraction() {
   }
 }
 
-function C(e) {
+function C(e: { clientX: number; clientY: number; }) {
   A.x = e.clientX;
   A.y = e.clientY;
   for (const [elem, t] of b) {
@@ -328,7 +332,7 @@ function L() {
   }
 }
 
-function TouchStart(e) {
+function TouchStart(e: { touches: string | any[]; preventDefault: () => void; }) {
   if (e.touches.length > 0) {
     e.preventDefault();
     A.x = e.touches[0].clientX;
@@ -349,7 +353,7 @@ function TouchStart(e) {
   }
 }
 
-function TouchMove(e) {
+function TouchMove(e: { touches: string | any[]; preventDefault: () => void; }) {
   if (e.touches.length > 0) {
     e.preventDefault();
     A.x = e.touches[0].clientX;
@@ -385,14 +389,14 @@ function TouchEnd() {
   }
 }
 
-function P(e, t) {
+function P(e: { position: any; nPosition: any; }, t: { left: number; top: number; width: number; height: number; }) {
   const { position: i, nPosition: s } = e;
   i.x = A.x - t.left;
   i.y = A.y - t.top;
   s.x = (i.x / t.width) * 2 - 1;
   s.y = (-i.y / t.height) * 2 + 1;
 }
-function D(e) {
+function D(e: { left: any; top: any; width: any; height: any; }) {
   const { x: t, y: i } = A;
   const { left: s, top: n, width: o, height: r } = e;
   return t >= s && t <= s + o && i >= n && i <= n + r;
@@ -411,7 +415,7 @@ const H = new a();
 const T = new a();
 
 class W {
-  constructor(e) {
+  constructor(e: { count: any; colors?: number[]; ambientColor?: number; ambientIntensity?: number; lightIntensity?: number; materialParams?: { metalness: number; roughness: number; clearcoat: number; clearcoatRoughness: number; }; minSize?: number; maxSize?: number; size0?: number; gravity?: number; friction?: number; wallBounce?: number; maxVelocity?: number; maxX?: number; maxY?: number; maxZ?: number; controlSphere0?: boolean; followCursor?: boolean; }) {
     this.config = e;
     this.positionData = new Float32Array(3 * e.count).fill(0);
     this.velocityData = new Float32Array(3 * e.count).fill(0);
@@ -437,7 +441,7 @@ class W {
       t[i] = k(e.minSize, e.maxSize);
     }
   }
-  update(e) {
+  update(e: { delta: number; }) {
     const { config: t, center: i, positionData: s, sizeData: n, velocityData: o } = this;
     let r = 0;
     if (t.controlSphere0) {
@@ -524,7 +528,7 @@ class W {
 }
 
 class Y extends c {
-  constructor(e) {
+  constructor(e: MeshPhysicalMaterialParameters | undefined) {
     super(e);
   }
 }
@@ -558,7 +562,11 @@ const X = {
 const U = new m();
 
 class Z extends d {
-  constructor(e, t = {}) {
+  [x: string]: {
+    count // @ts-nocheck
+    : number; colors: number[]; ambientColor: number; ambientIntensity: number; lightIntensity: number; materialParams: { metalness: number; roughness: number; clearcoat: number; clearcoatRoughness: number; }; minSize: number; maxSize: number; size0: number; gravity: number; friction: number; wallBounce: number; maxVelocity: number; maxX: number; maxY: number; maxZ: number; controlSphere0: boolean; followCursor: boolean;
+  };
+  constructor(e: s, t = {}) {
     const i = { ...X, ...t };
     const s = new z();
     const n = new p(e, 0.04).fromScene(s).texture;
@@ -577,21 +585,21 @@ class Z extends d {
     this.light = new u(this.config.colors[0], this.config.lightIntensity);
     this.add(this.light);
   }
-  setColors(e) {
+  setColors(e: string | any[]) {
     if (Array.isArray(e) && e.length > 1) {
       const t = (function (e) {
-        let t, i;
-        function setColors(e) {
+        let t, i: any[];
+        function setColors(e: any[]) {
           t = e;
           i = [];
-          t.forEach((col) => {
+          t.forEach((col: ColorRepresentation | undefined) => {
             i.push(new l(col));
           });
         }
         setColors(e);
         return {
           setColors,
-          getColorAt: function (ratio, out = new l()) {
+          getColorAt: function (ratio: number, out = new l()) {
             const scaled = Math.max(0, Math.min(1, ratio)) * (t.length - 1);
             const idx = Math.floor(scaled);
             const start = i[idx];
@@ -614,7 +622,7 @@ class Z extends d {
       this.instanceColor.needsUpdate = true;
     }
   }
-  update(e) {
+  update(e: any) {
     this.physics.update(e);
     for (let idx = 0; idx < this.count; idx++) {
       U.position.fromArray(this.physics.positionData, 3 * idx);
@@ -631,13 +639,13 @@ class Z extends d {
   }
 }
 
-function createBallpit(e, t = {}) {
+function createBallpit(e: HTMLCanvasElement, t = {}) {
   const i = new x({
     canvas: e,
     size: "parent",
     rendererOptions: { antialias: true, alpha: true },
   });
-  let s;
+  let s: Z;
   i.renderer.toneMapping = v;
   i.camera.position.set(0, 0, 20);
   i.camera.lookAt(0, 0, 0);
@@ -666,7 +674,7 @@ function createBallpit(e, t = {}) {
       s.config.controlSphere0 = false;
     },
   });
-  function initialize(e) {
+  function initialize(e: {} | undefined) {
     if (s) {
       i.clear();
       i.scene.remove(s);
@@ -674,10 +682,10 @@ function createBallpit(e, t = {}) {
     s = new Z(i.renderer, e);
     i.scene.add(s);
   }
-  i.onBeforeRender = (e) => {
+  i.onBeforeRender = (e: any) => {
     if (!c) s.update(e);
   };
-  i.onAfterResize = (e) => {
+  i.onAfterResize = (e: { wWidth: number; wHeight: number; }) => {
     s.config.maxX = e.wWidth / 2;
     s.config.maxY = e.wHeight / 2;
   };
@@ -686,7 +694,7 @@ function createBallpit(e, t = {}) {
     get spheres() {
       return s;
     },
-    setCount(e) {
+    setCount(e: any) {
       initialize({ ...s.config, count: e });
     },
     togglePause() {

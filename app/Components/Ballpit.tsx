@@ -1,422 +1,481 @@
 "use client";
-// @ts-nocheck
 
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import {
-  Vector3 as a,
-  MeshPhysicalMaterial as c,
+  Vector3,
+  MeshPhysicalMaterial,
   Camera,
   ColorRepresentation,
-  InstancedMesh as d,
-  Timer as e,
-  AmbientLight as f,
-  SphereGeometry as g,
-  ShaderChunk as h,
-  Scene as i,
-  Color as l,
-  Object3D as m,
+  InstancedMesh,
+  Timer,
+  AmbientLight,
+  SphereGeometry,
+  Scene,
+  Color,
+  Object3D,
   MeshPhysicalMaterialParameters,
-  SRGBColorSpace as n,
-  MathUtils as o,
+  SRGBColorSpace,
+  MathUtils,
   Object3DEventMap,
-  PMREMGenerator as p,
-  Vector2 as r,
-  WebGLRenderer as s,
-  PerspectiveCamera as t,
-  PointLight as u,
-  ACESFilmicToneMapping as v,
-  Plane as w,
-  Raycaster as y,
+  PMREMGenerator,
+  Vector2,
+  WebGLRenderer,
+  PerspectiveCamera,
+  PointLight,
+  ACESFilmicToneMapping,
+  Plane,
+  Raycaster,
 } from "three";
-import { RoomEnvironment as z } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
-class x {
-  #e;
+interface EngineSize {
+  width: number;
+  height: number;
+  wWidth: number;
+  wHeight: number;
+  ratio: number;
+  pixelRatio: number;
+}
+
+interface RendererOptions {
+  antialias?: boolean;
+  alpha?: boolean;
+}
+
+interface EngineConfig {
+  canvas?: HTMLCanvasElement;
+  id?: string;
+  size: "parent" | { width: number; height: number };
+  rendererOptions?: RendererOptions;
+}
+
+class ThreeEngine {
+  #rendererOptions: EngineConfig;
   canvas!: HTMLCanvasElement;
   camera!: Camera;
-  cameraMinAspect!: number;
-  cameraMaxAspect!: number;
+  cameraMinAspect?: number;
+  cameraMaxAspect?: number;
   cameraFov!: number;
-  maxPixelRatio!: number;
-  minPixelRatio!: number;
-  scene!: i<Object3DEventMap>;
-  renderer!: s;
-  #t: any;
-  size = { width: 0, height: 0, wWidth: 0, wHeight: 0, ratio: 0, pixelRatio: 0 };
-  render = this.#i;
-  onBeforeRender = () => {};
-  onAfterRender = () => {};
-  onAfterResize = () => {};
-  #s = false;
-  #n = false;
+  maxPixelRatio?: number;
+  minPixelRatio?: number;
+  scene!: Scene<Object3DEventMap>;
+  renderer!: WebGLRenderer;
+  #postprocessingEffect: any;
+  size: EngineSize = { width: 0, height: 0, wWidth: 0, wHeight: 0, ratio: 0, pixelRatio: 0 };
+  render: () => void = this.#defaultRender;
+  onBeforeRender: (time: { elapsed: number; delta: number }) => void = () => {};
+  onAfterRender: (time: { elapsed: number; delta: number }) => void = () => {};
+  onAfterResize: (size: EngineSize) => void = () => {};
+  #isIntersecting = false;
+  #isAnimating = false;
   isDisposed = false;
-  #o :any;
-  #r :any;
-  #a : any;
-  #c =new e();
-  #h = { elapsed: 0, delta: 0 };
-  #l: any;
-  constructor(e: { canvas?: any; id?: string; size: string; rendererOptions: { antialias: boolean; alpha: boolean; }; }) {
-    this.#e = { ...e };
-    this.#m();
-    this.#d();
-    this.#p();
+  #intersectionObserver?: IntersectionObserver;
+  #resizeObserver?: ResizeObserver;
+  #resizeTimeout?: ReturnType<typeof setTimeout>;
+  #timer = new Timer();
+  #timeData = { elapsed: 0, delta: 0 };
+  #animationFrameId?: number;
+
+  constructor(options: EngineConfig) {
+    this.#rendererOptions = { ...options };
+    this.#initCamera();
+    this.#initScene();
+    this.#initRenderer();
     this.resize();
-    this.#g();
+    this.#initObservers();
   }
-  #m() {
-    this.camera = new t();
-    this.cameraFov = (this.camera as t).fov;
+
+  #initCamera() {
+    this.camera = new PerspectiveCamera();
+    this.cameraFov = (this.camera as PerspectiveCamera).fov;
   }
-  #d() {
-    this.scene = new i();
+
+  #initScene() {
+    this.scene = new Scene();
   }
-  #p() {
-    if (this.#e.canvas) {
-      this.canvas = this.#e.canvas;
-    } else if (this.#e.id) {
-this.canvas = document.getElementById(this.#e.id) as HTMLCanvasElement;    } else {
+
+  #initRenderer() {
+    if (this.#rendererOptions.canvas) {
+      this.canvas = this.#rendererOptions.canvas;
+    } else if (this.#rendererOptions.id) {
+      this.canvas = document.getElementById(this.#rendererOptions.id) as HTMLCanvasElement;
+    } else {
       console.error("Three: Missing canvas or id parameter");
     }
     this.canvas.style.display = "block";
-    const e = {
+    
+    const options = {
       canvas: this.canvas,
-      powerPreference: "high-performance",
-      ...(this.#e.rendererOptions ?? {}),
+      powerPreference: "high-performance" as const,
+      ...(this.#rendererOptions.rendererOptions ?? {}),
     };
-    this.renderer = new s(e);
-    this.renderer.outputColorSpace = n;
+    this.renderer = new WebGLRenderer(options);
+    this.renderer.outputColorSpace = SRGBColorSpace;
   }
-  #g() {
-if (!(this.#e.size instanceof Object)) {
-          window.addEventListener("resize", this.#f.bind(this));
-      if (this.#e.size === "parent" && this.canvas.parentNode) {
-        this.#r = new ResizeObserver(this.#f.bind(this));
-        this.#r.observe(this.canvas.parentNode);
+
+  #initObservers() {
+    if (typeof this.#rendererOptions.size !== "object") {
+      window.addEventListener("resize", this.#handleResizeDebounce.bind(this));
+      if (this.#rendererOptions.size === "parent" && this.canvas.parentNode) {
+        this.#resizeObserver = new ResizeObserver(this.#handleResizeDebounce.bind(this));
+        this.#resizeObserver.observe(this.canvas.parentNode as Element);
       }
     }
-    this.#o = new IntersectionObserver(this.#u.bind(this), {
+    this.#intersectionObserver = new IntersectionObserver(this.#handleIntersection.bind(this), {
       root: null,
       rootMargin: "0px",
       threshold: 0,
     });
-    this.#o.observe(this.canvas);
-    document.addEventListener("visibilitychange", this.#v.bind(this));
+    this.#intersectionObserver.observe(this.canvas);
+    document.addEventListener("visibilitychange", this.#handleVisibilityChange.bind(this));
   }
-  #y() {
-    window.removeEventListener("resize", this.#f.bind(this));
-    this.#r?.disconnect();
-    this.#o?.disconnect();
-    document.removeEventListener("visibilitychange", this.#v.bind(this));
+
+  #removeObservers() {
+    window.removeEventListener("resize", this.#handleResizeDebounce.bind(this));
+    this.#resizeObserver?.disconnect();
+    this.#intersectionObserver?.disconnect();
+    document.removeEventListener("visibilitychange", this.#handleVisibilityChange.bind(this));
   }
-  #u(e: { isIntersecting: boolean; }[]) {
-    this.#s = e[0].isIntersecting;
-    this.#s ? this.#w() : this.#z();
+
+  #handleIntersection(entries: IntersectionObserverEntry[]) {
+    this.#isIntersecting = entries[0].isIntersecting;
+    this.#isIntersecting ? this.#startAnimation() : this.#stopAnimation();
   }
-  #v() {
-    if (this.#s) {
-      document.hidden ? this.#z() : this.#w();
+
+  #handleVisibilityChange() {
+    if (this.#isIntersecting) {
+      document.hidden ? this.#stopAnimation() : this.#startAnimation();
     }
   }
-  #f() {
-    if (this.#a) clearTimeout(this.#a);
-    this.#a = setTimeout(this.resize.bind(this), 100);
+
+  #handleResizeDebounce() {
+    if (this.#resizeTimeout) clearTimeout(this.#resizeTimeout);
+    this.#resizeTimeout = setTimeout(this.resize.bind(this), 100);
   }
+
   resize() {
-    let e, t;
-if (typeof this.#e.size === "object" && this.#e.size !== null) {
-      e = this.#e.size.width
-      t = this.#e.size.height;
-    } else if (this.#e.size === "parent" && this.canvas.parentNode) {
-      e = this.canvas.parentNode.offsetWidth;
-      t = this.canvas.parentNode.offsetHeight;
+    let width = 0;
+    let height = 0;
+    if (typeof this.#rendererOptions.size === "object" && this.#rendererOptions.size !== null) {
+      width = this.#rendererOptions.size.width;
+      height = this.#rendererOptions.size.height;
+    } else if (this.#rendererOptions.size === "parent" && this.canvas.parentNode) {
+      width = (this.canvas.parentNode as HTMLElement).offsetWidth;
+      height = (this.canvas.parentNode as HTMLElement).offsetHeight;
     } else {
-      e = window.innerWidth;
-      t = window.innerHeight;
+      width = window.innerWidth;
+      height = window.innerHeight;
     }
-    this.size.width = e;
-    this.size.height = t;
-    this.size.ratio = e / t;
-    this.#x();
-    this.#b();
+    this.size.width = width;
+    this.size.height = height;
+    this.size.ratio = width / height;
+    this.#updateCameraMatrix();
+    this.#updateRendererSize();
     this.onAfterResize(this.size);
   }
-  #x() {
-    this.camera.aspect = this.size.width / this.size.height;
-    if (this.camera.isPerspectiveCamera && this.cameraFov) {
-      if (this.cameraMinAspect && this.camera.aspect < this.cameraMinAspect) {
-        this.#A(this.cameraMinAspect);
-      } else if (this.cameraMaxAspect && this.camera.aspect > this.cameraMaxAspect) {
-        this.#A(this.cameraMaxAspect);
-      } else {
-        this.camera.fov = this.cameraFov;
+
+ #updateCameraMatrix() {
+    if (this.camera instanceof PerspectiveCamera) {
+      this.camera.aspect = this.size.width / this.size.height;
+      if (this.cameraFov) {
+        if (this.cameraMinAspect && this.camera.aspect < this.cameraMinAspect) {
+          this.#adjustFov(this.cameraMinAspect);
+        } else if (this.cameraMaxAspect && this.camera.aspect > this.cameraMaxAspect) {
+          this.#adjustFov(this.cameraMaxAspect);
+        } else {
+          this.camera.fov = this.cameraFov;
+        }
       }
+      this.camera.updateProjectionMatrix();
+      this.updateWorldSize();
     }
-    this.camera.updateProjectionMatrix();
-    this.updateWorldSize();
   }
-  #A(e: number) {
-    const t = Math.tan(o.degToRad(this.cameraFov / 2)) / (this.camera.aspect / e);
-    this.camera.fov = 2 * o.radToDeg(Math.atan(t));
+
+  #adjustFov(aspectThreshold: number) {
+    if (this.camera instanceof PerspectiveCamera) {
+      const t = Math.tan(MathUtils.degToRad(this.cameraFov / 2)) / (this.camera.aspect / aspectThreshold);
+      this.camera.fov = 2 * MathUtils.radToDeg(Math.atan(t));
+    }
   }
+
   updateWorldSize() {
-    if (this.camera.isPerspectiveCamera) {
-      const e = (this.camera.fov * Math.PI) / 180;
-      this.size.wHeight = 2 * Math.tan(e / 2) * this.camera.position.length();
+    if (this.camera instanceof PerspectiveCamera) {
+      const fovRad = (this.camera.fov * Math.PI) / 180;
+      this.size.wHeight = 2 * Math.tan(fovRad / 2) * this.camera.position.length();
       this.size.wWidth = this.size.wHeight * this.camera.aspect;
-    } else if (this.camera.isOrthographicCamera) {
-      this.size.wHeight = this.camera.top - this.camera.bottom;
-      this.size.wWidth = this.camera.right - this.camera.left;
     }
   }
-  #b() {
+
+  #updateRendererSize() {
     this.renderer.setSize(this.size.width, this.size.height);
-    this.#t?.setSize(this.size.width, this.size.height);
-    let e = window.devicePixelRatio;
-    if (this.maxPixelRatio && e > this.maxPixelRatio) {
-      e = this.maxPixelRatio;
-    } else if (this.minPixelRatio && e < this.minPixelRatio) {
-      e = this.minPixelRatio;
+    this.#postprocessingEffect?.setSize(this.size.width, this.size.height);
+    let pixelRatio = window.devicePixelRatio;
+    if (this.maxPixelRatio && pixelRatio > this.maxPixelRatio) {
+      pixelRatio = this.maxPixelRatio;
+    } else if (this.minPixelRatio && pixelRatio < this.minPixelRatio) {
+      pixelRatio = this.minPixelRatio;
     }
-    this.renderer.setPixelRatio(e);
-    this.size.pixelRatio = e;
+    this.renderer.setPixelRatio(pixelRatio);
+    this.size.pixelRatio = pixelRatio;
   }
+
   get postprocessing() {
-    return this.#t;
+    return this.#postprocessingEffect;
   }
-  set postprocessing(e) {
-    this.#t = e;
-    this.render = e.render.bind(e);
+
+  set postprocessing(effect: any) {
+    this.#postprocessingEffect = effect;
+    this.render = effect.render.bind(effect);
   }
-  #w() {
-    if (this.#n) return;
+
+  #startAnimation() {
+    if (this.#isAnimating) return;
     const animate = () => {
-      this.#l = requestAnimationFrame(animate);
-      this.#c.update();
-      this.#h.delta = this.#c.getDelta();
-      this.#h.elapsed += this.#h.delta;
-      this.onBeforeRender(this.#h);
+      this.#animationFrameId = requestAnimationFrame(animate);
+      this.#timer.update();
+      this.#timeData.delta = this.#timer.getDelta();
+      this.#timeData.elapsed += this.#timeData.delta;
+      this.onBeforeRender(this.#timeData);
       this.render();
-      this.onAfterRender(this.#h);
+      this.onAfterRender(this.#timeData);
     };
-    this.#n = true;
-    this.#c.reset();
+    this.#isAnimating = true;
+    this.#timer.reset();
     animate();
   }
-  #z() {
-    if (this.#n) {
-      cancelAnimationFrame(this.#l);
-      this.#n = false;
+
+  #stopAnimation() {
+    if (this.#isAnimating) {
+      if (this.#animationFrameId !== undefined) cancelAnimationFrame(this.#animationFrameId);
+      this.#isAnimating = false;
     }
   }
-  #i() {
+
+  #defaultRender() {
     this.renderer.render(this.scene, this.camera);
   }
+
   clear() {
-    this.scene.traverse((e: { isMesh: any; material: { [x: string]: any; dispose?: any; } | null; geometry: { dispose: () => void; }; }) => {
-      if (e.isMesh && typeof e.material === "object" && e.material !== null) {
-        Object.keys(e.material).forEach((t) => {
-          const i = e.material[t];
-          if (i !== null && typeof i === "object" && typeof i.dispose === "function") {
-            i.dispose();
-          }
-        });
-        e.material.dispose();
-        e.geometry.dispose();
+    this.scene.traverse((object: any) => {
+      if (object.isMesh && object.material) {
+        if (typeof object.material === "object") {
+          Object.keys(object.material).forEach((key) => {
+            const materialProp = object.material[key];
+            if (materialProp && typeof materialProp.dispose === "function") {
+              materialProp.dispose();
+            }
+          });
+        }
+        if (typeof object.material.dispose === "function") object.material.dispose();
+        if (object.geometry && typeof object.geometry.dispose === "function") object.geometry.dispose();
       }
     });
     this.scene.clear();
   }
+
   dispose() {
-    this.#y();
-    this.#z();
-    this.#c.dispose();
+    this.#removeObservers();
+    this.#stopAnimation();
+    this.#timer.dispose();
     this.clear();
-    this.#t?.dispose();
+    this.#postprocessingEffect?.dispose();
     this.renderer.dispose();
     this.isDisposed = true;
   }
 }
 
-const b = new Map(),
-  A = new r();
-let R = false;
-function S(e: { domElement: any; onMove?: () => void; onLeave?: () => void; }) {
-  const t = {
-    position: new r(),
-    nPosition: new r(),
+interface InteractionHandler {
+  position: Vector2;
+  nPosition: Vector2;
+  hover: boolean;
+  touching: boolean;
+  onEnter: (handler: InteractionHandler) => void;
+  onMove: (handler: InteractionHandler) => void;
+  onClick: (handler: InteractionHandler) => void;
+  onLeave: (handler: InteractionHandler) => void;
+  dispose?: () => void;
+}
+
+const activeInteractions = new Map<HTMLElement, InteractionHandler>();
+const currentPointerPos = new Vector2();
+let isListeningToEvents = false;
+
+function setupInteraction(options: { domElement: HTMLElement; onMove?: () => void; onLeave?: () => void }) {
+  const handler: InteractionHandler = {
+    position: new Vector2(),
+    nPosition: new Vector2(),
     hover: false,
     touching: false,
     onEnter() {},
     onMove() {},
     onClick() {},
     onLeave() {},
-    ...e,
+    ...options,
   };
-  (function (e, t) {
-    if (!b.has(e)) {
-      b.set(e, t);
-      if (!R) {
-        document.body.addEventListener("pointermove", M);
-        document.body.addEventListener("pointerleave", L);
-        document.body.addEventListener("click", C);
 
-        document.body.addEventListener("touchstart", TouchStart, { passive: false });
-        document.body.addEventListener("touchmove", TouchMove, { passive: false });
-        document.body.addEventListener("touchend", TouchEnd, { passive: false });
-        document.body.addEventListener("touchcancel", TouchEnd, { passive: false });
+  if (!activeInteractions.has(options.domElement)) {
+    activeInteractions.set(options.domElement, handler);
+    if (!isListeningToEvents) {
+      document.body.addEventListener("pointermove", handlePointerMove);
+      document.body.addEventListener("pointerleave", handlePointerLeave);
+      document.body.addEventListener("click", handlePointerClick);
 
-        R = true;
-      }
+      document.body.addEventListener("touchstart", handleTouchStart, { passive: false });
+      document.body.addEventListener("touchmove", handleTouchMove, { passive: false });
+      document.body.addEventListener("touchend", handleTouchEnd, { passive: false });
+      document.body.addEventListener("touchcancel", handleTouchEnd, { passive: false });
+
+      isListeningToEvents = true;
     }
-  })(e.domElement, t);
-  t.dispose = () => {
-    const t = e.domElement;
-    b.delete(t);
-    if (b.size === 0) {
-      document.body.removeEventListener("pointermove", M);
-      document.body.removeEventListener("pointerleave", L);
-      document.body.removeEventListener("click", C);
+  }
 
-      document.body.removeEventListener("touchstart", TouchStart);
-      document.body.removeEventListener("touchmove", TouchMove);
-      document.body.removeEventListener("touchend", TouchEnd);
-      document.body.removeEventListener("touchcancel", TouchEnd);
+  handler.dispose = () => {
+    activeInteractions.delete(options.domElement);
+    if (activeInteractions.size === 0) {
+      document.body.removeEventListener("pointermove", handlePointerMove);
+      document.body.removeEventListener("pointerleave", handlePointerLeave);
+      document.body.removeEventListener("click", handlePointerClick);
 
-      R = false;
+      document.body.removeEventListener("touchstart", handleTouchStart);
+      document.body.removeEventListener("touchmove", handleTouchMove);
+      document.body.removeEventListener("touchend", handleTouchEnd);
+      document.body.removeEventListener("touchcancel", handleTouchEnd);
+
+      isListeningToEvents = false;
     }
   };
-  return t;
+  return handler;
 }
 
-function M(e: { clientX: number; clientY: number; }) {
-  A.x = e.clientX;
-  A.y = e.clientY;
-  processInteraction();
+function handlePointerMove(e: PointerEvent) {
+  currentPointerPos.x = e.clientX;
+  currentPointerPos.y = e.clientY;
+  processInteractions();
 }
 
-function processInteraction() {
-  for (const [elem, t] of b) {
-    const i = elem.getBoundingClientRect();
-    if (D(i)) {
-      P(t, i);
-      if (!t.hover) {
-        t.hover = true;
-        t.onEnter(t);
+function processInteractions() {
+  for (const [elem, handler] of activeInteractions) {
+    const rect = elem.getBoundingClientRect();
+    if (isInsideBoundingRect(rect)) {
+      updatePositions(handler, rect);
+      if (!handler.hover) {
+        handler.hover = true;
+        handler.onEnter(handler);
       }
-      t.onMove(t);
-    } else if (t.hover && !t.touching) {
-      t.hover = false;
-      t.onLeave(t);
+      handler.onMove(handler);
+    } else if (handler.hover && !handler.touching) {
+      handler.hover = false;
+      handler.onLeave(handler);
     }
   }
 }
 
-function C(e: { clientX: number; clientY: number; }) {
-  A.x = e.clientX;
-  A.y = e.clientY;
-  for (const [elem, t] of b) {
-    const i = elem.getBoundingClientRect();
-    P(t, i);
-    if (D(i)) t.onClick(t);
+function handlePointerClick(e: MouseEvent) {
+  currentPointerPos.x = e.clientX;
+  currentPointerPos.y = e.clientY;
+  for (const [elem, handler] of activeInteractions) {
+    const rect = elem.getBoundingClientRect();
+    updatePositions(handler, rect);
+    if (isInsideBoundingRect(rect)) handler.onClick(handler);
   }
 }
 
-function L() {
-  for (const t of b.values()) {
-    if (t.hover) {
-      t.hover = false;
-      t.onLeave(t);
+function handlePointerLeave() {
+  for (const handler of activeInteractions.values()) {
+    if (handler.hover) {
+      handler.hover = false;
+      handler.onLeave(handler);
     }
   }
 }
 
-function TouchStart(e: { touches: string | any[]; preventDefault: () => void; }) {
+function handleTouchStart(e: TouchEvent) {
   if (e.touches.length > 0) {
     e.preventDefault();
-    A.x = e.touches[0].clientX;
-    A.y = e.touches[0].clientY;
+    currentPointerPos.x = e.touches[0].clientX;
+    currentPointerPos.y = e.touches[0].clientY;
 
-    for (const [elem, t] of b) {
+    for (const [elem, handler] of activeInteractions) {
       const rect = elem.getBoundingClientRect();
-      if (D(rect)) {
-        t.touching = true;
-        P(t, rect);
-        if (!t.hover) {
-          t.hover = true;
-          t.onEnter(t);
+      if (isInsideBoundingRect(rect)) {
+        handler.touching = true;
+        updatePositions(handler, rect);
+        if (!handler.hover) {
+          handler.hover = true;
+          handler.onEnter(handler);
         }
-        t.onMove(t);
+        handler.onMove(handler);
       }
     }
   }
 }
 
-function TouchMove(e: { touches: string | any[]; preventDefault: () => void; }) {
+function handleTouchMove(e: TouchEvent) {
   if (e.touches.length > 0) {
     e.preventDefault();
-    A.x = e.touches[0].clientX;
-    A.y = e.touches[0].clientY;
+    currentPointerPos.x = e.touches[0].clientX;
+    currentPointerPos.y = e.touches[0].clientY;
 
-    for (const [elem, t] of b) {
+    for (const [elem, handler] of activeInteractions) {
       const rect = elem.getBoundingClientRect();
-      P(t, rect);
+      updatePositions(handler, rect);
 
-      if (D(rect)) {
-        if (!t.hover) {
-          t.hover = true;
-          t.touching = true;
-          t.onEnter(t);
+      if (isInsideBoundingRect(rect)) {
+        if (!handler.hover) {
+          handler.hover = true;
+          handler.touching = true;
+          handler.onEnter(handler);
         }
-        t.onMove(t);
-      } else if (t.hover && t.touching) {
-        t.onMove(t);
+        handler.onMove(handler);
+      } else if (handler.hover && handler.touching) {
+        handler.onMove(handler);
       }
     }
   }
 }
 
-function TouchEnd() {
-  for (const [, t] of b) {
-    if (t.touching) {
-      t.touching = false;
-      if (t.hover) {
-        t.hover = false;
-        t.onLeave(t);
+function handleTouchEnd() {
+  for (const [, handler] of activeInteractions) {
+    if (handler.touching) {
+      handler.touching = false;
+      if (handler.hover) {
+        handler.hover = false;
+        handler.onLeave(handler);
       }
     }
   }
 }
 
-function P(e: { position: any; nPosition: any; }, t: { left: number; top: number; width: number; height: number; }) {
-  const { position: i, nPosition: s } = e;
-  i.x = A.x - t.left;
-  i.y = A.y - t.top;
-  s.x = (i.x / t.width) * 2 - 1;
-  s.y = (-i.y / t.height) * 2 + 1;
-}
-function D(e: { left: any; top: any; width: any; height: any; }) {
-  const { x: t, y: i } = A;
-  const { left: s, top: n, width: o, height: r } = e;
-  return t >= s && t <= s + o && i >= n && i <= n + r;
+function updatePositions(handler: InteractionHandler, rect: DOMRect) {
+  const { position, nPosition } = handler;
+  position.x = currentPointerPos.x - rect.left;
+  position.y = currentPointerPos.y - rect.top;
+  nPosition.x = (position.x / rect.width) * 2 - 1;
+  nPosition.y = (-position.y / rect.height) * 2 + 1;
 }
 
-const { randFloat: k, randFloatSpread: E } = o;
-const F = new a();
-const I = new a();
-const O = new a();
-const V = new a();
-const B = new a();
-const N = new a();
-const _ = new a();
-const j = new a();
-const H = new a();
-const T = new a();
+function isInsideBoundingRect(rect: DOMRect) {
+  const { x, y } = currentPointerPos;
+  const { left, top, width, height } = rect;
+  return x >= left && x <= left + width && y >= top && y <= top + height;
+}
 
-type BallPhysicsConfig = {
+const { randFloat, randFloatSpread } = MathUtils;
+const tempV1 = new Vector3();
+const tempV2 = new Vector3();
+const tempV3 = new Vector3();
+const tempV4 = new Vector3();
+const tempV5 = new Vector3();
+const tempV6 = new Vector3();
+const tempV7 = new Vector3();
+const tempV8 = new Vector3();
+const tempV9 = new Vector3();
+const tempV10 = new Vector3();
+
+interface BallpitConfig {
   count: number;
-  colors: number[];
-  ambientColor: number;
+  colors: ColorRepresentation[];
+  ambientColor: ColorRepresentation;
   ambientIntensity: number;
   lightIntensity: number;
   materialParams: {
@@ -437,130 +496,137 @@ type BallPhysicsConfig = {
   maxZ: number;
   controlSphere0: boolean;
   followCursor: boolean;
-};
+}
 
-class W {
-  constructor(e: { count: any; colors?: number[]; ambientColor?: number; ambientIntensity?: number; lightIntensity?: number; materialParams?: { metalness: number; roughness: number; clearcoat: number; clearcoatRoughness: number; }; minSize?: number; maxSize?: number; size0?: number; gravity?: number; friction?: number; wallBounce?: number; maxVelocity?: number; maxX?: number; maxY?: number; maxZ?: number; controlSphere0?: boolean; followCursor?: boolean; }) {
-    this.config = e;
-    this.positionData = new Float32Array(3 * e.count).fill(0);
-    this.velocityData = new Float32Array(3 * e.count).fill(0);
-    this.sizeData = new Float32Array(e.count).fill(1);
-    this.center = new a();
-    this.#R();
+class PhysicsSystem {
+  config: BallpitConfig;
+  positionData: Float32Array;
+  velocityData: Float32Array;
+  sizeData: Float32Array;
+  center: Vector3;
+
+  constructor(config: BallpitConfig) {
+    this.config = config;
+    this.positionData = new Float32Array(3 * config.count).fill(0);
+    this.velocityData = new Float32Array(3 * config.count).fill(0);
+    this.sizeData = new Float32Array(config.count).fill(1);
+    this.center = new Vector3();
+    this.#resetPositions();
     this.setSizes();
   }
-  #R() {
-    const { config: e, positionData: t } = this;
-    this.center.toArray(t, 0);
-    for (let i = 1; i < e.count; i++) {
-      const s = 3 * i;
-      t[s] = E(2 * e.maxX);
-      t[s + 1] = E(2 * e.maxY);
-      t[s + 2] = E(2 * e.maxZ);
+
+  #resetPositions() {
+    const { config, positionData } = this;
+    this.center.toArray(positionData, 0);
+    for (let i = 1; i < config.count; i++) {
+      const index = 3 * i;
+      positionData[index] = randFloatSpread(2 * config.maxX);
+      positionData[index + 1] = randFloatSpread(2 * config.maxY);
+      positionData[index + 2] = randFloatSpread(2 * config.maxZ);
     }
   }
+
   setSizes() {
-    const { config: e, sizeData: t } = this;
-    t[0] = e.size0;
-    for (let i = 1; i < e.count; i++) {
-      t[i] = k(e.minSize, e.maxSize);
+    const { config, sizeData } = this;
+    sizeData[0] = config.size0;
+    for (let i = 1; i < config.count; i++) {
+      sizeData[i] = randFloat(config.minSize, config.maxSize);
     }
   }
-  update(e: { delta: number; }) {
-    const { config: t, center: i, positionData: s, sizeData: n, velocityData: o } = this;
-    let r = 0;
-    if (t.controlSphere0) {
-      r = 1;
-      F.fromArray(s, 0);
-      F.lerp(i, 0.1).toArray(s, 0);
-      V.set(0, 0, 0).toArray(o, 0);
+
+  update(time: { delta: number }) {
+    const { config, center, positionData, sizeData, velocityData } = this;
+    let startIdx = 0;
+    if (config.controlSphere0) {
+      startIdx = 1;
+      tempV1.fromArray(positionData, 0);
+      tempV1.lerp(center, 0.1).toArray(positionData, 0);
+      tempV4.set(0, 0, 0).toArray(velocityData, 0);
     }
-    for (let idx = r; idx < t.count; idx++) {
+    
+    for (let idx = startIdx; idx < config.count; idx++) {
       const base = 3 * idx;
-      I.fromArray(s, base);
-      B.fromArray(o, base);
-      B.y -= e.delta * t.gravity * n[idx];
-      B.multiplyScalar(t.friction);
-      B.clampLength(0, t.maxVelocity);
-      I.add(B);
-      I.toArray(s, base);
-      B.toArray(o, base);
+      tempV2.fromArray(positionData, base);
+      tempV5.fromArray(velocityData, base);
+      tempV5.y -= time.delta * config.gravity * sizeData[idx];
+      tempV5.multiplyScalar(config.friction);
+      tempV5.clampLength(0, config.maxVelocity);
+      tempV2.add(tempV5);
+      tempV2.toArray(positionData, base);
+      tempV5.toArray(velocityData, base);
     }
-    for (let idx = r; idx < t.count; idx++) {
+
+    for (let idx = startIdx; idx < config.count; idx++) {
       const base = 3 * idx;
-      I.fromArray(s, base);
-      B.fromArray(o, base);
-      const radius = n[idx];
-      for (let jdx = idx + 1; jdx < t.count; jdx++) {
+      tempV2.fromArray(positionData, base);
+      tempV5.fromArray(velocityData, base);
+      const radius = sizeData[idx];
+
+      for (let jdx = idx + 1; jdx < config.count; jdx++) {
         const otherBase = 3 * jdx;
-        O.fromArray(s, otherBase);
-        N.fromArray(o, otherBase);
-        const otherRadius = n[jdx];
-        _.copy(O).sub(I);
-        const dist = _.length();
+        tempV3.fromArray(positionData, otherBase);
+        tempV6.fromArray(velocityData, otherBase);
+        const otherRadius = sizeData[jdx];
+        tempV7.copy(tempV3).sub(tempV2);
+        const dist = tempV7.length();
         const sumRadius = radius + otherRadius;
+
         if (dist < sumRadius) {
           const overlap = sumRadius - dist;
-          j.copy(_)
-            .normalize()
-            .multiplyScalar(0.5 * overlap);
-          H.copy(j).multiplyScalar(Math.max(B.length(), 1));
-          T.copy(j).multiplyScalar(Math.max(N.length(), 1));
-          I.sub(j);
-          B.sub(H);
-          I.toArray(s, base);
-          B.toArray(o, base);
-          O.add(j);
-          N.add(T);
-          O.toArray(s, otherBase);
-          N.toArray(o, otherBase);
+          tempV8.copy(tempV7).normalize().multiplyScalar(0.5 * overlap);
+          tempV9.copy(tempV8).multiplyScalar(Math.max(tempV5.length(), 1));
+          tempV10.copy(tempV8).multiplyScalar(Math.max(tempV6.length(), 1));
+          tempV2.sub(tempV8);
+          tempV5.sub(tempV9);
+          tempV2.toArray(positionData, base);
+          tempV5.toArray(velocityData, base);
+          tempV3.add(tempV8);
+          tempV6.add(tempV10);
+          tempV3.toArray(positionData, otherBase);
+          tempV6.toArray(velocityData, otherBase);
         }
       }
-      if (t.controlSphere0) {
-        _.copy(F).sub(I);
-        const dist = _.length();
-        const sumRadius0 = radius + n[0];
+
+      if (config.controlSphere0) {
+        tempV7.copy(tempV1).sub(tempV2);
+        const dist = tempV7.length();
+        const sumRadius0 = radius + sizeData[0];
         if (dist < sumRadius0) {
           const diff = sumRadius0 - dist;
-          j.copy(_.normalize()).multiplyScalar(diff);
-          H.copy(j).multiplyScalar(Math.max(B.length(), 2));
-          I.sub(j);
-          B.sub(H);
+          tempV8.copy(tempV7).normalize().multiplyScalar(diff);
+          tempV9.copy(tempV8).multiplyScalar(Math.max(tempV5.length(), 2));
+          tempV2.sub(tempV8);
+          tempV5.sub(tempV9);
         }
       }
-      if (Math.abs(I.x) + radius > t.maxX) {
-        I.x = Math.sign(I.x) * (t.maxX - radius);
-        B.x = -B.x * t.wallBounce;
+
+      if (Math.abs(tempV2.x) + radius > config.maxX) {
+        tempV2.x = Math.sign(tempV2.x) * (config.maxX - radius);
+        tempV5.x = -tempV5.x * config.wallBounce;
       }
-      if (t.gravity === 0) {
-        if (Math.abs(I.y) + radius > t.maxY) {
-          I.y = Math.sign(I.y) * (t.maxY - radius);
-          B.y = -B.y * t.wallBounce;
+      if (config.gravity === 0) {
+        if (Math.abs(tempV2.y) + radius > config.maxY) {
+          tempV2.y = Math.sign(tempV2.y) * (config.maxY - radius);
+          tempV5.y = -tempV5.y * config.wallBounce;
         }
-      } else if (I.y - radius < -t.maxY) {
-        I.y = -t.maxY + radius;
-        B.y = -B.y * t.wallBounce;
+      } else if (tempV2.y - radius < -config.maxY) {
+        tempV2.y = -config.maxY + radius;
+        tempV5.y = -tempV5.y * config.wallBounce;
       }
-      const maxBoundary = Math.max(t.maxZ, t.maxSize);
-      if (Math.abs(I.z) + radius > maxBoundary) {
-        I.z = Math.sign(I.z) * (t.maxZ - radius);
-        B.z = -B.z * t.wallBounce;
+      const maxBoundary = Math.max(config.maxZ, config.maxSize);
+      if (Math.abs(tempV2.z) + radius > maxBoundary) {
+        tempV2.z = Math.sign(tempV2.z) * (config.maxZ - radius);
+        tempV5.z = -tempV5.z * config.wallBounce;
       }
-      I.toArray(s, base);
-      B.toArray(o, base);
+      tempV2.toArray(positionData, base);
+      tempV5.toArray(velocityData, base);
     }
   }
 }
 
-class Y extends c {
-  constructor(e: MeshPhysicalMaterialParameters | undefined) {
-    super(e);
-  }
-}
-
-const X = {
+const DEFAULT_CONFIG: BallpitConfig = {
   count: 200,
-  colors: [0, 0, 0],
+  colors: [0x000000, 0x000000, 0x000000],
   ambientColor: 16777215,
   ambientIntensity: 1,
   lightIntensity: 200,
@@ -584,166 +650,181 @@ const X = {
   followCursor: true,
 };
 
-const U = new m();
+const dummyTransformObject = new Object3D();
 
-class Z extends d {
-  [x: string]: {
-    count // @ts-nocheck
-    : number; colors: number[]; ambientColor: number; ambientIntensity: number; lightIntensity: number; materialParams: { metalness: number; roughness: number; clearcoat: number; clearcoatRoughness: number; }; minSize: number; maxSize: number; size0: number; gravity: number; friction: number; wallBounce: number; maxVelocity: number; maxX: number; maxY: number; maxZ: number; controlSphere0: boolean; followCursor: boolean;
-  };
-  constructor(e: s, t = {}) {
-    const i = { ...X, ...t };
-    const s = new z();
-    const n = new p(e, 0.04).fromScene(s).texture;
-    const o = new g();
-    const r = new Y({ envMap: n, ...i.materialParams });
-    r.envMapRotation.x = -Math.PI / 2;
-    super(o, r, i.count);
-    this.config = i;
-    this.physics = new W(i);
-    this.#S();
-    this.setColors(i.colors);
+class BallpitMesh extends InstancedMesh {
+  config: BallpitConfig;
+  physics: PhysicsSystem;
+  ambientLight!: AmbientLight;
+  light!: PointLight;
+
+  constructor(renderer: WebGLRenderer, options = {}) {
+    const mergedConfig = { ...DEFAULT_CONFIG, ...options };
+    const roomEnv = new RoomEnvironment();
+    const pmremTexture = new PMREMGenerator(renderer).fromScene(roomEnv).texture;
+    const geometry = new SphereGeometry();
+    const material = new MeshPhysicalMaterial({ envMap: pmremTexture, ...mergedConfig.materialParams });
+    material.envMapRotation.x = -Math.PI / 2;
+    
+    super(geometry, material, mergedConfig.count);
+    this.config = mergedConfig;
+    this.physics = new PhysicsSystem(mergedConfig);
+    this.#initLights();
+    this.setColors(mergedConfig.colors);
   }
-  #S() {
-    this.ambientLight = new f(this.config.ambientColor, this.config.ambientIntensity);
+
+  #initLights() {
+    this.ambientLight = new AmbientLight(this.config.ambientColor, this.config.ambientIntensity);
     this.add(this.ambientLight);
-    this.light = new u(this.config.colors[0], this.config.lightIntensity);
+    this.light = new PointLight(this.config.colors[0], this.config.lightIntensity);
     this.add(this.light);
   }
-  setColors(e: string | any[]) {
-    if (Array.isArray(e) && e.length > 1) {
-      const t = (function (e) {
-        let t, i: any[];
-        function setColors(e: any[]) {
-          t = e;
-          i = [];
-          t.forEach((col: ColorRepresentation | undefined) => {
-            i.push(new l(col));
-          });
-        }
-        setColors(e);
+
+  setColors(colorArray: ColorRepresentation[]) {
+    if (Array.isArray(colorArray) && colorArray.length > 0) {
+      const colorGradient = (() => {
+        let originalColors = colorArray;
+        let instantiatedColors: Color[] = [];
+        const updateColors = (colors: ColorRepresentation[]) => {
+          originalColors = colors;
+          instantiatedColors = originalColors.map((col) => new Color(col));
+        };
+        updateColors(colorArray);
         return {
-          setColors,
-          getColorAt: function (ratio: number, out = new l()) {
-            const scaled = Math.max(0, Math.min(1, ratio)) * (t.length - 1);
+          getColorAt: (ratio: number, out = new Color()) => {
+            const scaled = Math.max(0, Math.min(1, ratio)) * (originalColors.length - 1);
             const idx = Math.floor(scaled);
-            const start = i[idx];
-            if (idx >= t.length - 1) return start.clone();
+            const start = instantiatedColors[idx];
+            if (idx >= originalColors.length - 1) return start.clone();
             const alpha = scaled - idx;
-            const end = i[idx + 1];
+            const end = instantiatedColors[idx + 1];
             out.r = start.r + alpha * (end.r - start.r);
             out.g = start.g + alpha * (end.g - start.g);
             out.b = start.b + alpha * (end.b - start.b);
             return out;
           },
         };
-      })(e);
+      })();
+
       for (let idx = 0; idx < this.count; idx++) {
-        this.setColorAt(idx, t.getColorAt(idx / this.count));
+        const color = colorGradient.getColorAt(idx / this.count);
+        this.setColorAt(idx, color);
         if (idx === 0) {
-          this.light.color.copy(t.getColorAt(idx / this.count));
+          this.light.color.copy(color);
         }
       }
-      this.instanceColor.needsUpdate = true;
+      if (this.instanceColor) this.instanceColor.needsUpdate = true;
     }
   }
-  update(e: any) {
-    this.physics.update(e);
+
+  update(time: { delta: number }) {
+    this.physics.update(time);
     for (let idx = 0; idx < this.count; idx++) {
-      U.position.fromArray(this.physics.positionData, 3 * idx);
-      if (idx === 0 && this.config.followCursor === false) {
-        U.scale.setScalar(0);
+      dummyTransformObject.position.fromArray(this.physics.positionData, 3 * idx);
+      if (idx === 0 && !this.config.followCursor) {
+        dummyTransformObject.scale.setScalar(0);
       } else {
-        U.scale.setScalar(this.physics.sizeData[idx]);
+        dummyTransformObject.scale.setScalar(this.physics.sizeData[idx]);
       }
-      U.updateMatrix();
-      this.setMatrixAt(idx, U.matrix);
-      if (idx === 0) this.light.position.copy(U.position);
+      dummyTransformObject.updateMatrix();
+      this.setMatrixAt(idx, dummyTransformObject.matrix);
+      if (idx === 0) this.light.position.copy(dummyTransformObject.position);
     }
     this.instanceMatrix.needsUpdate = true;
   }
 }
 
-function createBallpit(e: HTMLCanvasElement, t = {}) {
-  const i = new x({
-    canvas: e,
+function createBallpitEngine(canvasElement: HTMLCanvasElement, options = {}) {
+  const engine = new ThreeEngine({
+    canvas: canvasElement,
     size: "parent",
     rendererOptions: { antialias: true, alpha: true },
   });
-  let s: Z;
-  i.renderer.toneMapping = v;
-  i.camera.position.set(0, 0, 20);
-  i.camera.lookAt(0, 0, 0);
-  i.cameraMaxAspect = 1.5;
-  i.resize();
-  initialize(t);
-  const n = new y();
-  const o = new w(new a(0, 0, 1), 0);
-  const r = new a();
-  let c = false;
+  
+  let meshInstance: BallpitMesh;
+  engine.renderer.toneMapping = ACESFilmicToneMapping;
+  engine.camera.position.set(0, 0, 20);
+  engine.camera.lookAt(0, 0, 0);
+  engine.cameraMaxAspect = 1.5;
+  engine.resize();
+  
+  function initializeMesh(opts: any) {
+    if (meshInstance) {
+      engine.clear();
+      engine.scene.remove(meshInstance);
+    }
+    meshInstance = new BallpitMesh(engine.renderer, opts);
+    engine.scene.add(meshInstance);
+  }
+  
+  initializeMesh(options);
+  
+  const raycaster = new Raycaster();
+  const plane = new Plane(new Vector3(0, 0, 1), 0);
+  const intersectionPoint = new Vector3();
+  let isPaused = false;
 
-  e.style.touchAction = "none";
-  e.style.userSelect = "none";
-  e.style.webkitUserSelect = "none";
+  canvasElement.style.touchAction = "none";
+  canvasElement.style.userSelect = "none";
+  canvasElement.style.webkitUserSelect = "none";
 
-  const h = S({
-    domElement: e,
+  const interaction = setupInteraction({
+    domElement: canvasElement,
     onMove() {
-      n.setFromCamera(h.nPosition, i.camera);
-      i.camera.getWorldDirection(o.normal);
-      n.ray.intersectPlane(o, r);
-      s.physics.center.copy(r);
-      s.config.controlSphere0 = true;
+      raycaster.setFromCamera(interaction.nPosition, engine.camera);
+      engine.camera.getWorldDirection(plane.normal);
+      raycaster.ray.intersectPlane(plane, intersectionPoint);
+      meshInstance.physics.center.copy(intersectionPoint);
+      meshInstance.config.controlSphere0 = true;
     },
     onLeave() {
-      s.config.controlSphere0 = false;
+      meshInstance.config.controlSphere0 = false;
     },
   });
-  function initialize(e: {} | undefined) {
-    if (s) {
-      i.clear();
-      i.scene.remove(s);
-    }
-    s = new Z(i.renderer, e);
-    i.scene.add(s);
-  }
-  i.onBeforeRender = (e: any) => {
-    if (!c) s.update(e);
+
+  engine.onBeforeRender = (time) => {
+    if (!isPaused) meshInstance.update(time);
   };
-  i.onAfterResize = (e: { wWidth: number; wHeight: number; }) => {
-    s.config.maxX = e.wWidth / 2;
-    s.config.maxY = e.wHeight / 2;
+
+  engine.onAfterResize = (size) => {
+    meshInstance.config.maxX = size.wWidth / 2;
+    meshInstance.config.maxY = size.wHeight / 2;
   };
+
   return {
-    three: i,
+    three: engine,
     get spheres() {
-      return s;
+      return meshInstance;
     },
-    setCount(e: any) {
-      initialize({ ...s.config, count: e });
+    setCount(count: number) {
+      initializeMesh({ ...meshInstance.config, count });
     },
     togglePause() {
-      c = !c;
+      isPaused = !isPaused;
     },
     dispose() {
-      h.dispose();
-      i.dispose();
+      interaction.dispose?.();
+      engine.dispose();
     },
   };
 }
 
-const Ballpit = ({ className = "", followCursor = true, ...props }: any) => {
+interface BallpitProps extends Partial<BallpitConfig> {
+  className?: string;
+}
+
+const Ballpit: React.FC<BallpitProps> = ({ className = "", followCursor = true, ...props }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const spheresInstanceRef = useRef<any>(null);
+  const engineInstanceRef = useRef<ReturnType<typeof createBallpitEngine> | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    spheresInstanceRef.current = createBallpit(canvas, { followCursor, ...props });
+    engineInstanceRef.current = createBallpitEngine(canvas, { followCursor, ...props });
 
     return () => {
-      spheresInstanceRef.current?.dispose();
+      engineInstanceRef.current?.dispose();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

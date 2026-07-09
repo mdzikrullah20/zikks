@@ -413,6 +413,32 @@ const j = new a();
 const H = new a();
 const T = new a();
 
+type BallPhysicsConfig = {
+  count: number;
+  colors: number[];
+  ambientColor: number;
+  ambientIntensity: number;
+  lightIntensity: number;
+  materialParams: {
+    metalness: number;
+    roughness: number;
+    clearcoat: number;
+    clearcoatRoughness: number;
+  };
+  minSize: number;
+  maxSize: number;
+  size0: number;
+  gravity: number;
+  friction: number;
+  wallBounce: number;
+  maxVelocity: number;
+  maxX: number;
+  maxY: number;
+  maxZ: number;
+  controlSphere0: boolean;
+  followCursor: boolean;
+};
+
 class W {
   constructor(e: { count: any; colors?: number[]; ambientColor?: number; ambientIntensity?: number; lightIntensity?: number; materialParams?: { metalness: number; roughness: number; clearcoat: number; clearcoatRoughness: number; }; minSize?: number; maxSize?: number; size0?: number; gravity?: number; friction?: number; wallBounce?: number; maxVelocity?: number; maxX?: number; maxY?: number; maxZ?: number; controlSphere0?: boolean; followCursor?: boolean; }) {
     this.config = e;

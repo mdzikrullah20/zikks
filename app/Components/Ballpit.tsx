@@ -41,7 +41,7 @@ class x {
   minPixelRatio!: number;
   scene!: i<Object3DEventMap>;
   renderer!: s;
-  #t;
+  #t: any;
   size = { width: 0, height: 0, wWidth: 0, wHeight: 0, ratio: 0, pixelRatio: 0 };
   render = this.#i;
   onBeforeRender = () => {};
@@ -50,13 +50,13 @@ class x {
   #s = false;
   #n = false;
   isDisposed = false;
-  #o;
-  #r;
-  #a;
-  #c = new e();
+  #o :any;
+  #r :any;
+  #a : any;
+  #c =new e();
   #h = { elapsed: 0, delta: 0 };
-  #l;
-  constructor(e: { canvas: any; size: string; rendererOptions: { antialias: boolean; alpha: boolean; }; }) {
+  #l: any;
+  constructor(e: { canvas?: any; id?: string; size: string; rendererOptions: { antialias: boolean; alpha: boolean; }; }) {
     this.#e = { ...e };
     this.#m();
     this.#d();
@@ -66,7 +66,7 @@ class x {
   }
   #m() {
     this.camera = new t();
-    this.cameraFov = this.camera.fov;
+    this.cameraFov = (this.camera as t).fov;
   }
   #d() {
     this.scene = new i();
@@ -75,8 +75,7 @@ class x {
     if (this.#e.canvas) {
       this.canvas = this.#e.canvas;
     } else if (this.#e.id) {
-      this.canvas = document.getElementById(this.#e.id);
-    } else {
+this.canvas = document.getElementById(this.#e.id) as HTMLCanvasElement;    } else {
       console.error("Three: Missing canvas or id parameter");
     }
     this.canvas.style.display = "block";
@@ -89,8 +88,8 @@ class x {
     this.renderer.outputColorSpace = n;
   }
   #g() {
-    if (!(this.#e.size instanceof Object)) {
-      window.addEventListener("resize", this.#f.bind(this));
+if (!(this.#e.size instanceof Object)) {
+          window.addEventListener("resize", this.#f.bind(this));
       if (this.#e.size === "parent" && this.canvas.parentNode) {
         this.#r = new ResizeObserver(this.#f.bind(this));
         this.#r.observe(this.canvas.parentNode);
@@ -125,8 +124,8 @@ class x {
   }
   resize() {
     let e, t;
-    if (this.#e.size instanceof Object) {
-      e = this.#e.size.width;
+if (typeof this.#e.size === "object" && this.#e.size !== null) {
+      e = this.#e.size.width
       t = this.#e.size.height;
     } else if (this.#e.size === "parent" && this.canvas.parentNode) {
       e = this.canvas.parentNode.offsetWidth;

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  ArrowRight,
   Code2,
   Smartphone,
   Brain,
@@ -25,7 +24,6 @@ export default function HomePage() {
     };
 
     window.addEventListener("scroll", handleScroll);
-
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -155,195 +153,191 @@ export default function HomePage() {
         </div>
 
         <div className="relative z-20 mx-auto max-w-7xl px-6">
-  <div className="mx-auto max-w-5xl text-center">
+          <div className="mx-auto max-w-5xl text-center">
+            <h1
+              className="
+                mx-auto
+                max-w-5xl
+                text-4xl
+                font-bold
+                leading-tight
+                md:text-7xl
+              "
+            >
+              From consulting to development, we deliver
+              <span className="text-[#0e4980]"> technology </span>
+              that fits your needs perfectly.
+            </h1>
 
-    <h1
-      className="
-        mx-auto
-        max-w-5xl
-        text-4xl
-        font-bold
-        leading-tight
-        md:text-7xl
-      "
-    >
-      From consulting to development, we deliver
-      <span className="text-[#0e4980]"> technology </span>
-      that fits your needs perfectly.
-    </h1>
+            <p
+              className="
+                mx-auto
+                mt-6
+                max-w-2xl
+                text-center
+                text-lg
+                text-blue-100
+                md:text-xl
+              "
+            >
+              We specialize in AI, Salesforce, and custom app solutions to accelerate
+              business growth.
+            </p>
+            <Link
+              href="/contact"
+              className="
+                group
+                md:mt-10
+                relative
+                inline-flex
+                items-center
+                justify-center
+                overflow-hidden
+                rounded-full
+                bg-white
+                px-10
+                py-4
+                text-lg
+                font-bold
+                text-black
+                shadow-lg
+                transition
+                duration-300
+                animate-bounce
+              "
+            >
+              <span
+                className="
+                  relative
+                  z-10
+                  animate-pulse
+                  transition
+                  duration-300
+                "
+              >
+                Let's Talk
+              </span>
 
-    <p
-      className="
-        mx-auto
-        mt-6
-        max-w-2xl
-        text-center
-        text-lg
-        text-blue-100
-        md:text-xl
-      "
-    >
-      We specialize in AI, Salesforce, and custom app solutions to accelerate
-      business growth.
-    </p>
-<Link
-  href="/contact"
-  className="
-    group
-    md:mt-10
-    relative
-    inline-flex
-    items-center
-    justify-center
-    overflow-hidden
-    rounded-full
-    bg-white
-    px-10
-    py-4
-    text-lg
-    font-bold
-    text-black
-    shadow-lg
-    transition
-    duration-300
-    animate-bounce
-  "
->
-  <span
-    className="
-      relative
-      z-10
-      animate-pulse
-      transition
-      duration-300
-    "
-  >
-    Let's Talk
-  </span>
-
-  <span
-    className="
-      absolute
-      inset-0
-      -z-0
-      to-orange-500
-      opacity-0
-      transition
-      duration-500
-      group-hover:opacity-100
-    "
-  />
-</Link>
-  </div>
-</div>
+              <span
+                className="
+                  absolute
+                  inset-0
+                  -z-0
+                  to-orange-500
+                  opacity-0
+                  transition
+                  duration-500
+                  group-hover:opacity-100
+                "
+              />
+            </Link>
+          </div>
+        </div>
       </section>
 
       {/* STATS */}
-     <section className="py-16 border-2">
-  <h1 className="mb-10 text-center text-4xl font-bold text-black">
-    What We Do
-  </h1>
+      <section className="py-16 border-2">
+        <h1 className="mb-10 text-center text-4xl font-bold text-black">
+          What We Do
+        </h1>
 
-  <div className="mx-auto grid max-w-6xl gap-6 px-6 md:grid-cols-4">
-    {stats.map((item, index) => (
-      <div
-        key={index}
-        className="rounded-2xl bg-gray-50 p-6 text-center"
-      >
-        <h2 className="text-4xl font-bold text-blue-900">
-          {item.number}
-        </h2>
+        <div className="mx-auto grid max-w-6xl gap-6 px-6 md:grid-cols-4">
+          {stats.map((item, index) => (
+            <div
+              key={index}
+              className="rounded-2xl bg-gray-50 p-6 text-center"
+            >
+              <h2 className="text-4xl font-bold text-blue-900">
+                {item.number}
+              </h2>
+              <p className="mt-2 text-gray-600">{item.text}</p>
+            </div>
+          ))}
+        </div>
 
-        <p className="mt-2 text-gray-600">{item.text}</p>
-      </div>
-    ))}
-  </div>
+        {/* Service Cards */}
+        <div className="mx-auto mt-16 grid max-w-6xl gap-8 px-6 md:grid-cols-3">
+          
+          {/* Salesforce Card */}
+          <Link href="/salesforce" className="block overflow-hidden rounded-2xl bg-white shadow-lg cursor-pointer">
+            <div>
+              <img
+                src="https://images.unsplash.com/photo-1556761175-b413da4baf72"
+                alt="Salesforce services"
+                className="h-56 w-full object-cover"
+              />
 
-  {/* Service Cards */}
-  <div className="mx-auto mt-16 grid max-w-6xl gap-8 px-6 md:grid-cols-3">
-    {/* Salesforce Card */}
-<div className="overflow-hidden rounded-2xl bg-white shadow-lg cursor-pointer">
-  <Link href="/salesforce">
-    <img
-      src="https://images.unsplash.com/photo-1556761175-b413da4baf72"
-      alt="Salesforce services"
-      className="h-56 w-full object-cover"
-    />
+              <div className="p-6">
+                <h2 className="text-2xl font-bold text-blue-900">
+                  Salesforce Solutions
+                </h2>
 
-    <div className="p-6">
-      <h2 className="text-2xl font-bold text-blue-900">
-        Salesforce Solutions
-      </h2>
+                <p className="mt-3 text-gray-600">
+                  We build and customize Salesforce solutions to improve business
+                  processes, automation, and customer relationships.
+                </p>
 
-      <p className="mt-3 text-gray-600">
-        We build and customize Salesforce solutions to improve business
-        processes, automation, and customer relationships.
-      </p>
-
-      <button className="mt-5 rounded-lg bg-[#0a2840] px-5 py-2 text-white hover:shadow-lg cursor-pointer">
-        Learn More
-      </button>
-    </div>
-  </Link>
-</div>
-
-    {/* AI Card */}
-    <div className="overflow-hidden rounded-2xl bg-white shadow-lg cursor-pointer">
-      <Link href="/ai">
-      <img
-        src="https://images.unsplash.com/photo-1677442136019-21780ecad995"
-        alt="Artificial Intelligence"
-        className="h-56 w-full object-cover"
-      />
-
-      <div className="p-6">
-        <h2 className="text-2xl font-bold text-blue-900">
-          Artificial Intelligence
-        </h2>
-
-        <p className="mt-3 text-gray-600">
-          We create AI-powered solutions that automate tasks, analyze data,
-          and help businesses make smarter decisions.
-        </p>
-
-        <button  className="mt-5 rounded-lg bg-[#0a2840] px-5 py-2 text-white hover:shadow-lg cursor-pointer">
-          <Link href="/ai">
-          Learn More
+                <div className="mt-5 inline-block rounded-lg bg-[#0a2840] px-5 py-2 text-white hover:shadow-lg">
+                  Learn More
+                </div>
+              </div>
+            </div>
           </Link>
-        </button>
-      </div>
-      </Link>
-    </div>
 
-    {/* Custom App Development Card */}
-    <div className="overflow-hidden rounded-2xl bg-white shadow-lg cursor-pointer">
-      <Link href="/customapp">
-      <img
-        src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3"
-        alt="Custom app development"
-        className="h-56 w-full object-cover"
-      />
+          {/* AI Card */}
+          <Link href="/ai" className="block overflow-hidden rounded-2xl bg-white shadow-lg cursor-pointer">
+            <div>
+              <img
+                src="https://images.unsplash.com/photo-1677442136019-21780ecad995"
+                alt="Artificial Intelligence"
+                className="h-56 w-full object-cover"
+              />
 
-      <div className="p-6">
-        <h2 className="text-2xl font-bold text-blue-900">
-          Custom App Development
-        </h2>
+              <div className="p-6">
+                <h2 className="text-2xl font-bold text-blue-900">
+                  Artificial Intelligence
+                </h2>
 
-        <p className="mt-3 text-gray-600">
-          We develop scalable web and mobile applications tailored to your
-          business requirements.
-        </p>
+                <p className="mt-3 text-gray-600">
+                  We create AI-powered solutions that automate tasks, analyze data,
+                  and help businesses make smarter decisions.
+                </p>
 
-        <button className="mt-5 rounded-lg bg-[#09234f] px-5 py-2 text-white hover:shadow-lg cursor-pointer">
-          <Link href="/customapp">
-          Learn More
+                <div className="mt-5 inline-block rounded-lg bg-[#0a2840] px-5 py-2 text-white hover:shadow-lg">
+                  Learn More
+                </div>
+              </div>
+            </div>
           </Link>
-        </button>
-      </div>
-      </Link>
-    </div>
-  </div>
-</section>
+
+          {/* Custom App Development Card */}
+          <Link href="/customapp" className="block overflow-hidden rounded-2xl bg-white shadow-lg cursor-pointer">
+            <div>
+              <img
+                src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3"
+                alt="Custom app development"
+                className="h-56 w-full object-cover"
+              />
+
+              <div className="p-6">
+                <h2 className="text-2xl font-bold text-blue-900">
+                  Custom App Development
+                </h2>
+
+                <p className="mt-3 text-gray-600">
+                  We develop scalable web and mobile applications tailored to your
+                  business requirements.
+                </p>
+
+                <div className="mt-5 inline-block rounded-lg bg-[#09234f] px-5 py-2 text-white hover:shadow-lg">
+                  Learn More
+                </div>
+              </div>
+            </div>
+          </Link>
+          
+        </div>
+      </section>
 
       {/* SERVICES */}
       <section className="py-20">
@@ -427,7 +421,6 @@ export default function HomePage() {
                 "
               >
                 <CheckCircle className="text-blue-900" />
-
                 <span className="text-black">{item}</span>
               </div>
             ))}

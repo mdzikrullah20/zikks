@@ -84,7 +84,7 @@ export default function HomePage() {
   ];
 
   return (
-    <main className="bg-white overflow-hidden w-full">
+    <main className="bg-white overflow-x-hidden w-full relative">
       {/* HERO */}
       <section
         className="
@@ -100,10 +100,10 @@ export default function HomePage() {
           w-full
         "
       >
-        {/* Ballpit Background */}
-        <div className="absolute inset-0 z-0 opacity-80 pointer-events-none">
+        {/* Ballpit Background - Added strict pointer events blocker */}
+        <div className="absolute inset-0 z-0 opacity-80 pointer-events-none select-none md:block">
           <Ballpit
-            count={60} // Lower count on mobile for optimization, defaults up dynamically via config if supported
+            count={40} // Optimized for mobile view performance
             gravity={0.01}
             friction={0.9975}
             wallBounce={0.95}
@@ -227,7 +227,7 @@ export default function HomePage() {
       </section>
 
       {/* STATS & FEATURED CARDS */}
-      <section className="py-12 md:py-16 border-b-2 border-gray-100">
+      <section className="py-12 md:py-16 border-b-2 border-gray-100 relative z-10">
         <h1 className="mb-8 md:mb-10 text-center text-3xl md:text-4xl font-bold text-black px-4">
           What We Do
         </h1>
@@ -323,7 +323,7 @@ export default function HomePage() {
       </section>
 
       {/* SERVICES LIST */}
-      <section className="py-16 md:py-20 bg-white">
+      <section className="py-16 md:py-20 bg-white relative z-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="text-center">
             <p className="text-sm font-bold tracking-wider text-blue-700 uppercase">WHAT WE DO</p>
@@ -367,7 +367,7 @@ export default function HomePage() {
       </section>
 
       {/* WHY CHOOSE US */}
-      <section className="bg-gray-50 py-16 md:py-20">
+      <section className="bg-gray-50 py-16 md:py-20 relative z-10">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 sm:px-6 md:grid-cols-2 items-center">
           <div>
             <p className="text-sm font-bold tracking-wider text-blue-700 uppercase">WHY CHOOSE US</p>
@@ -412,7 +412,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA SECTION */}
-      <section className="bg-[#0a2840] py-16 md:py-20 text-white text-center px-4">
+      <section className="bg-[#0a2840] py-16 md:py-20 text-white text-center px-4 relative z-10">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
             Ready To Build Something Amazing?

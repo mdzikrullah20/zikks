@@ -90,6 +90,7 @@ export default function HomePage() {
         className="
           relative
           overflow-hidden
+          isolate
           bg-gradient-to-br
           from-[#a82364]
           via-[#a82364]

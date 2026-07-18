@@ -201,7 +201,7 @@ function MobileMenuItem({
   const isExpanded = openSubMenu === id;
 
   return (
-    <div className="border-b border-gray-100 pb-3 last:border-0 block w-full">
+    <div className="border-b border-gray-100 pb-3 last:border-0 block w-full relative z-10">
       <button
         type="button"
         onClick={(e) => {
@@ -221,20 +221,23 @@ function MobileMenuItem({
         />
       </button>
 
-      {isExpanded && (
-        <div className="ml-3 mt-1 flex flex-col gap-3 border-l-2 border-gray-100 pl-3 transition-all duration-200">
-          {items.map((item, index) => (
-            <Link
-              key={index}
-              href={item.href}
-              onClick={closeMobileMenu}
-              className="text-sm py-2 text-gray-600 hover:text-black active:text-indigo-600 block w-full pointer-events-auto"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </div>
-      )}
+      {/* FIX: always mounted, animated via max-height + opacity instead of unmounting */}
+      <div
+        className={`ml-3 flex flex-col gap-3 border-l-2 border-gray-100 pl-3 overflow-hidden transition-all duration-300 ease-in-out ${
+          isExpanded ? "max-h-96 opacity-100 mt-1" : "max-h-0 opacity-0 mt-0"
+        }`}
+      >
+        {items.map((item, index) => (
+          <Link
+            key={index}
+            href={item.href}
+            onClick={closeMobileMenu}
+            className="relative z-10 text-sm py-2 text-gray-700 hover:text-black active:text-indigo-600 block w-full pointer-events-auto whitespace-nowrap"
+          >
+            {item.label}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

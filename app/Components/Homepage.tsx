@@ -103,7 +103,7 @@ export default function HomePage() {
         {/* Ballpit Background - Added strict pointer events blocker */}
         <div className="absolute inset-0 z-0 opacity-80 pointer-events-none select-none md:block">
           <Ballpit
-            count={40} // Optimized for mobile view performance
+            count={40}
             gravity={0.01}
             friction={0.9975}
             wallBounce={0.95}

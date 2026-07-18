@@ -389,15 +389,22 @@ function handlePointerLeave() {
   }
 }
 
+/**
+ * ✅ FIXED: preventDefault ab sirf tab call hota hai jab touch
+ * canvas ke bounding rect ke andar ho — poori page par nahi.
+ * Isse mobile par navbar/menu clicks aur page scroll normal kaam karte hain.
+ */
 function handleTouchStart(e: TouchEvent) {
   if (e.touches.length > 0) {
-    e.preventDefault();
     currentPointerPos.x = e.touches[0].clientX;
     currentPointerPos.y = e.touches[0].clientY;
+
+    let shouldPrevent = false;
 
     for (const [elem, handler] of activeInteractions) {
       const rect = elem.getBoundingClientRect();
       if (isInsideBoundingRect(rect)) {
+        shouldPrevent = true;
         handler.touching = true;
         updatePositions(handler, rect);
         if (!handler.hover) {
@@ -407,20 +414,28 @@ function handleTouchStart(e: TouchEvent) {
         handler.onMove(handler);
       }
     }
+
+    if (shouldPrevent) e.preventDefault();
   }
 }
 
+/**
+ * ✅ FIXED: same reasoning — sirf canvas ke andar touch move par
+ * preventDefault call hoga, taaki page scroll block na ho.
+ */
 function handleTouchMove(e: TouchEvent) {
   if (e.touches.length > 0) {
-    e.preventDefault();
     currentPointerPos.x = e.touches[0].clientX;
     currentPointerPos.y = e.touches[0].clientY;
+
+    let shouldPrevent = false;
 
     for (const [elem, handler] of activeInteractions) {
       const rect = elem.getBoundingClientRect();
       updatePositions(handler, rect);
 
       if (isInsideBoundingRect(rect)) {
+        shouldPrevent = true;
         if (!handler.hover) {
           handler.hover = true;
           handler.touching = true;
@@ -431,6 +446,8 @@ function handleTouchMove(e: TouchEvent) {
         handler.onMove(handler);
       }
     }
+
+    if (shouldPrevent) e.preventDefault();
   }
 }
 

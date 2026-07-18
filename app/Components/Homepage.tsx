@@ -12,7 +12,7 @@ import {
   Cloud,
   CheckCircle,
 } from "lucide-react";
-import Ballpit from "./Ballpit";
+// import Ballpit from "./Ballpit";
 
 export default function HomePage() {
   // Scroll Animation
@@ -102,14 +102,14 @@ export default function HomePage() {
       >
         {/* Ballpit Background - Added strict pointer events blocker */}
         <div className="absolute inset-0 z-0 opacity-80 pointer-events-none select-none md:block">
-          <Ballpit
-            count={40} // Optimized for mobile view performance
+          {/* <Ballpit
+            count={40}
             gravity={0.01}
             friction={0.9975}
             wallBounce={0.95}
             followCursor={false}
             colors={[0x3b82f6, 0x6366f1, 0x0a2840]}
-          />
+          /> */}
         </div>
 
         {/* Left Floating SVG */}

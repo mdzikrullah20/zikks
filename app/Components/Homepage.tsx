@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -13,6 +13,75 @@ import {
   CheckCircle,
 } from "lucide-react";
 import Ballpit from "./Ballpit";
+
+// ─────────────────────────────────────────────
+// Reusable count-up component — parses numbers out of strings like "56+", "24/7"
+function AnimatedCounter({ value }: { value: string }) {
+  const [display, setDisplay] = useState("0");
+  const ref = useRef<HTMLHeadingElement>(null);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasAnimated.current) {
+            hasAnimated.current = true;
+            animateValue(value);
+          }
+        });
+      },
+      { threshold: 0.4 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function animateValue(targetStr: string) {
+    const match = targetStr.match(/\d+/g);
+    if (!match) {
+      setDisplay(targetStr);
+      return;
+    }
+
+    const numericTarget = parseInt(match[0], 10);
+    const suffix = targetStr.replace(match[0], "");
+    const duration = 1500;
+    const startTime = performance.now();
+
+    function tick(now: number) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      const current = Math.floor(eased * numericTarget);
+
+      setDisplay(`${current}${suffix}`);
+
+      if (progress < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        setDisplay(targetStr); // lock final exact value
+      }
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  return (
+    <h2
+      ref={ref}
+      className="text-2xl sm:text-4xl font-bold text-blue-900 tabular-nums"
+    >
+      {display}
+    </h2>
+  );
+}
+// ─────────────────────────────────────────────
 
 export default function HomePage() {
   // Scroll Animation
@@ -240,9 +309,7 @@ export default function HomePage() {
               key={index}
               className="rounded-2xl bg-gray-50 p-4 sm:p-6 text-center shadow-sm"
             >
-              <h2 className="text-2xl sm:text-4xl font-bold text-blue-900">
-                {item.number}
-              </h2>
+              <AnimatedCounter value={item.number} />
               <p className="mt-1 sm:mt-2 text-xs sm:text-sm md:text-base text-gray-600">{item.text}</p>
             </div>
           ))}
@@ -421,29 +488,31 @@ export default function HomePage() {
           <p className="mt-3 text-sm sm:text-base text-blue-100 max-w-md mx-auto">
             Let's discuss your next digital project.
           </p>
-          <div className="mt-6 sm:mt-8">
-            <Link
-              href="/contact"
-              className="
-                inline-block
-                rounded-xl
-                bg-white
-                px-6
-                sm:px-8
-                py-3
-                text-sm
-                sm:text-base
-                font-semibold
-                text-blue-900
-                hover:bg-blue-50
-                transition-colors
-                duration-200
-                shadow-md
-              "
-            >
-              Contact Us
-            </Link>
-          </div>
+       <div className="mt-6 sm:mt-8 relative z-20">
+  <Link
+    href="/contact"
+    className="
+      inline-block
+      rounded-xl
+      bg-white
+      px-6
+      sm:px-8
+      py-3
+      text-sm
+      sm:text-base
+      font-semibold
+      text-blue-900
+      hover:bg-blue-50
+      transition-colors
+      duration-200
+      shadow-md
+      relative
+      z-20
+    "
+  >
+    Contact Us
+  </Link>
+</div>
         </div>
       </section>
     </main>
